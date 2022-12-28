@@ -3,7 +3,8 @@ module.exports = {
     require('./migrate')
   ],
   postAuthrite: [
-    require('./newMessage'),
-    require('./processMessages')
+    require('./sendMessage'),
+    require('./checkMessages'),
+    require('./listMessages')
   ]
 }

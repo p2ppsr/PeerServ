@@ -69,20 +69,10 @@ app.use(authrite.middleware({
   serverPrivateKey: SERVER_PRIVATE_KEY,
   baseUrl: HOSTING_DOMAIN,
   // This allows you to request certificates from clients
-  requestedCertificates: {
-
-    // Specify the types of certificates to request...
-    // Here, we are requesting a "Cool Person Certificate"
-    types: {
-      // Provide an arra of fields the client should reveal for each type
-      // of certificate which you request
-      'AGfk/WrT1eBDXpz3mcw386Zww2HmqcIn3uY6x4Af1eo=': ['cool']
-    },
-    // Provide a list of certifiers you trust. Here, we are trusting
-    // CoolCert, the CA that issues Cool Person Certificates.
-    certifiers: ['0220529dc803041a83f4357864a09c717daa24397cf2f3fc3a5745ae08d30924fd']
-  }
+  requestedCertificates: {}
 }))
+
+// Optional: Add PacketPay middleware here to monetize API endpoints
 
 // Post-Authrite routes are added
 postAuthrite.forEach((route) => {
