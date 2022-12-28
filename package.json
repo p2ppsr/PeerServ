@@ -1,6 +1,6 @@
 {
   "name": "peerserv",
-  "description": "A Pedagogical SPV Implementation",
+  "description": "Peer-to-peer message exchange",
   "version": "0.1.0",
   "private": true,
   "main": "src/index.js",
