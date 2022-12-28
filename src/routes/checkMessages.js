@@ -1,7 +1,4 @@
-const crypto = require('crypto')
-const bsv = require('babbage-bsv')
 const {
-  SERVER_PRIVATE_KEY,
   NODE_ENV
 } = process.env
 const knex =
@@ -13,24 +10,28 @@ module.exports = {
   type: 'post',
   path: '/checkMessages',
   knex,
-  summary: 'Use this route to check for any messages that have not been recieved yet.',
+  summary: 'Use this route to check for any messages that have not been acknowledged yet.',
   parameters: {
     messageBoxes: 'An array of the messageBoxIds you would like to check for new messages. If none are provided, all messageBoxes checked.'
   },
   exampleResponse: {
     status: 'success',
-    messagesProcessed: ''
+    messages: [{
+      sender: 'xyz',
+      messageBoxId: 'abc',
+      body: ''
+    }]
   },
   errors: [
     'ERR_MESSAGEBOX_NOT_FOUND'
   ],
   func: async (req, res) => {
     try {
-      // Check for messages that haven't been recieved yet
+      // Check for messages that haven't been acknowledged yet
       let messages = await knex('messages').where({
         recipient: req.authrite.identityKey,
-        recieved: false
-      }).select('message', 'sender', 'recipient', 'messageBoxId')
+        acknowledged: false
+      }).select('body', 'sender', 'messageBoxId', 'recieved_at')
 
       // TODO: Test for what cases this actually happens.
       if (!messages) {
@@ -45,21 +46,23 @@ module.exports = {
         messages = messages.filter(m => req.body.messageBoxes.includes(m.messageBoxId))
       }
 
-      // Mark the message as recieved
+      // Mark the message as acknowledged
       // Note: Should this be down after it has been confirmed the the *transaction was processed?\
       // TODO: Consider refactor for simplicity
       if (messages.length !== 0) {
         if (req.body.messageBoxes && req.body.messageBoxes.length !== 0) {
           await knex('messages').where({
             recipient: req.authrite.identityKey,
-            recieved: false
+            acknowledged: false,
+            updated_at: new Date()
           }).whereIn('messageBoxId', req.body.messageBoxes)
-            .update({ recieved: true })
+            .update({ acknowledged: true })
         } else {
           await knex('messages').where({
             recipient: req.authrite.identityKey,
-            recieved: false
-          }).update({ recieved: true })
+            acknowledged: false,
+            updated_at: new Date()
+          }).update({ acknowledged: true })
         }
       }
 

@@ -16,7 +16,11 @@ module.exports = {
   },
   exampleResponse: {
     status: 'success',
-    messagesProcessed: ''
+    messages: [{
+      sender: 'xyz',
+      messageBoxId: 'abc',
+      body: ''
+    }]
   },
   errors: [
     'ERR_MESSAGEBOX_NOT_FOUND'
@@ -26,7 +30,7 @@ module.exports = {
       // Check for messages that haven't been recieved yet
       let messages = await knex('messages').where({
         recipient: req.authrite.identityKey
-      }).select('message', 'sender', 'recipient', 'messageBoxId')
+      }).select('body', 'sender', 'messageBoxId', 'recieved_at', 'updated_at')
 
       // TODO: Test for what cases this actually happens.
       if (!messages) {

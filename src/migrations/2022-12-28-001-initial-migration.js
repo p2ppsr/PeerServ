@@ -1,6 +1,7 @@
 exports.up = async knex => {
   await knex.schema.createTable('messageBox', table => {
-    table.increments('messageBoxId') // What type of messages go in here?
+    table.increments('messageBoxId')
+    table.string('type') // What type of messages go in here?
     table.timestamps()
     table.string('userId') // Who's message box is this?
     table.boolean('newMessages').defaultTo(false) // Are there new messages available?
@@ -19,7 +20,8 @@ exports.up = async knex => {
     table.string('sender')
     table.string('recipient')
     table.string('messageBoxId') // Ex. MetaNet ICU coupon tokens --> XYZ
-    table.boolean('recieved').defaultTo(false)
+    table.longtext('body') // Contents of the message
+    table.boolean('acknowledged').defaultTo(false)
   })
 }
 
