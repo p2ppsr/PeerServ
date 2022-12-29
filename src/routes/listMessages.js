@@ -12,7 +12,7 @@ module.exports = {
   knex,
   summary: 'Use this route to list messages from one or more of your message boxes.',
   parameters: {
-    messageBoxes: 'An array of the messageBoxIds you would like to list messages from. If none are provided, all messageBoxes will be included.'
+    messageBoxTypes: 'An array of the messageBoxTypes you would like to list messages from. If none are provided, all messageBoxes will be included.'
   },
   exampleResponse: {
     status: 'success',
@@ -27,6 +27,8 @@ module.exports = {
   ],
   func: async (req, res) => {
     try {
+      const messageBoxes = await knex('messageBox').whereIn('type', req.body.messageBoxTypes).select('messageBoxId')
+
       // Check for messages that haven't been recieved yet
       let messages = await knex('messages').where({
         recipient: req.authrite.identityKey
@@ -37,12 +39,13 @@ module.exports = {
         return res.status(400).json({
           status: 'error',
           code: 'ERR_INVALID_REQUEST',
-          description: 'A matching message box could not be found!'
+          description: 'Invalid request parameters!'
         })
       }
+
       // Filter for only the messages requested
-      if (req.body.messageBoxes && req.body.messageBoxes.length !== 0) {
-        messages = messages.filter(m => req.body.messageBoxes.includes(m.messageBoxId))
+      if (messageBoxes && messageBoxes.length !== 0) {
+        messages = messages.filter(m => messageBoxes.includes(m.messageBoxId))
       }
 
       // Return the required info to the sender

@@ -67,9 +67,9 @@ preAuthrite.forEach((route) => {
 // Authrite is enforced from here forward
 app.use(authrite.middleware({
   serverPrivateKey: SERVER_PRIVATE_KEY,
-  baseUrl: HOSTING_DOMAIN,
+  baseUrl: HOSTING_DOMAIN
   // This allows you to request certificates from clients
-  requestedCertificates: {}
+  // requestedCertificates: {}
 }))
 
 // Optional: Add PacketPay middleware here to monetize API endpoints

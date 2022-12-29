@@ -26,34 +26,58 @@ module.exports = {
   func: async (req, res) => {
     try {
       // Find valid messageBox for the recipient
-      let [recipient] = await knex('users').where({
-        identityKey: req.body.message.recipient
-      }).select('userId')
+      // const [sender] = await knex('users').where({
+      //   identityKey: req.authrite.identityKey
+      // }).select('userId')
 
-      if (!recipient) {
-        recipient = await knex('users').insert({
-          identityKey: req.body.message.recipient
-        }, ['userId'])
-      }
+      // if (!sender) {
+      //   [recipient] = await knex('users').insert({
+      //     identityKey: req.body.message.recipient
+      //   }, ['userId'])
+      // }
+
+      // let [recipient] = await knex('users').where({
+      //   identityKey: req.body.message.recipient
+      // }).select('userId')
+
+      // if (!recipient) {
+      //   [recipient] = await knex('users').insert({
+      //     identityKey: req.body.message.recipient
+      //   }, ['userId'])
+      // }
 
       // Select the message box for the given message type
-      let [messageBox] = await knex('messageBox').where({
-        userId: recipient.userId,
-        type: req.body.message.type
-      }).select('messageBoxId')
+      let messageBox = await knex('messageBox')
+        .where({
+          identityKey: req.body.message.recipient,
+          type: req.body.message.type
+        }).update({
+          updated_at: new Date(),
+          newMessages: true
+        })
       // If this messageBox does not exist yet, create it. Note: Is this the sender's job, or the recipient?
       if (!messageBox) {
-        messageBox = await knex('messageBox').insert({
-          userId: recipient.userId,
-          type: req.body.message.type
-        }, ['messageBoxId'])
+        await knex('messageBox').insert({
+          identityKey: req.body.message.recipient,
+          type: req.body.message.type,
+          created_at: new Date(),
+          updated_at: new Date(),
+          newMessages: true
+        })
       }
 
+      // Retrieve the newly created/updated messageBox (note: knex should simplify this)
+      [messageBox] = await knex('messageBox').where({
+        identityKey: req.body.message.recipient,
+        type: req.body.message.type
+      }).select('type')
+
       // Insert the new message
+      // TODO: encrypt the message
       await knex('messages').insert({
-        sender: req.body.identityKey,
+        sender: req.authrite.identityKey,
         recipient: req.body.message.recipient,
-        messageBoxId: messageBox.messageBoxId,
+        type: messageBox.type,
         body: JSON.stringify(req.body.message.body),
         created_at: new Date(),
         updated_at: new Date()
@@ -61,7 +85,7 @@ module.exports = {
 
       return res.status(200).json({
         status: 'success',
-        message: `Your message has been sent to ${req.body.recipient}`
+        message: `Your message has been sent to ${req.body.message.recipient}`
       })
     } catch (e) {
       console.error(e)
