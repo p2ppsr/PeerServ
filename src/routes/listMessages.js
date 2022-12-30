@@ -27,25 +27,23 @@ module.exports = {
   ],
   func: async (req, res) => {
     try {
-      const messageBoxes = await knex('messageBox').whereIn('type', req.body.messageBoxTypes).select('messageBoxId')
-
-      // Check for messages that haven't been recieved yet
-      let messages = await knex('messages').where({
-        recipient: req.authrite.identityKey
-      }).select('body', 'sender', 'messageBoxId', 'recieved_at', 'updated_at')
-
-      // TODO: Test for what cases this actually happens.
-      if (!messages) {
-        return res.status(400).json({
-          status: 'error',
-          code: 'ERR_INVALID_REQUEST',
-          description: 'Invalid request parameters!'
-        })
+      console.log(req.authrite.identityKey)
+      let messageBoxes = []
+      // Get message box ids that belong to me and are in my list of types.
+      if (req.body.messageBoxTypes) {
+        messageBoxes = await knex('messageBox').where({ identityKey: req.authrite.identityKey }).whereIn('type', req.body.messageBoxTypes).select('type')
+      } else {
+        messageBoxes = await knex('messageBox').where({ identityKey: req.authrite.identityKey }).select('type')
       }
 
-      // Filter for only the messages requested
+      // Get messages
+      let messages = await knex('messages').where({
+        recipient: req.authrite.identityKey
+      }).select('body', 'sender', 'type', 'created_at', 'updated_at')
+
+      // Filter for only the messages in the message boxes requested
       if (messageBoxes && messageBoxes.length !== 0) {
-        messages = messages.filter(m => messageBoxes.includes(m.messageBoxId))
+        messages = messages.filter(m => messageBoxes.some(x => x.type === m.type))
       }
 
       // Return the required info to the sender

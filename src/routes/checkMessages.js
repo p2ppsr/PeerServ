@@ -26,6 +26,7 @@ module.exports = {
   errors: [],
   func: async (req, res) => {
     try {
+      // TODO: Make use of list.
       let messageBoxes = []
       // Get message box ids that belong to me and are in my list of types.
       if (req.body.messageBoxTypes) {
