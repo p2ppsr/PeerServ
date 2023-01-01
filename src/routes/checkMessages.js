@@ -70,14 +70,14 @@ module.exports = {
         if (req.body.filterBy.messageBoxTypes && req.body.filterBy.messageBoxTypes.length !== 0) {
           validMessage = messageBoxes.some(x => x.type === m.type)
         }
-        if (req.body.filterBy.acknowledged) {
-          validMessage = m.acknowledged === req.body.filterBy.acknowledged
+        if ('acknowledged' in req.body.filterBy) {
+          validMessage = Boolean(m.acknowledged) === req.body.filterBy.acknowledged
         }
         return validMessage
       })
 
       // Just return if the messages aren't being processed?
-      if (!req.body.isReceiving) {
+      if (!req.body.isReceiving || messages.length === 0) {
         return res.status(200).json({
           status: 'success',
           messages
@@ -87,14 +87,12 @@ module.exports = {
       // Mark the message as acknowledged
       // Note: Should this be done after it has been confirmed the token has been processed?
       // TODO: Consider refactor for simplicity
-      if (messages.length !== 0) {
-        if (messageBoxes && messageBoxes.length !== 0) {
-          await knex('messages').where({
-            recipient: req.authrite.identityKey,
-            acknowledged: false
-          }).whereIn('type', messageBoxes.map(mB => mB.type))
-            .update({ acknowledged: true, updated_at: new Date() })
-        }
+      if (messageBoxes && messageBoxes.length !== 0) {
+        await knex('messages').where({
+          recipient: req.authrite.identityKey,
+          acknowledged: false
+        }).whereIn('type', messageBoxes.map(mB => mB.type))
+          .update({ acknowledged: true, updated_at: new Date() })
       }
 
       // There are no new messages for the given messageBoxes
