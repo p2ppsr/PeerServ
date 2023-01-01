@@ -9,7 +9,7 @@ const knex =
 
 module.exports = {
   type: 'post',
-  path: '/listMessages',
+  path: '/checkMessages',
   knex,
   summary: 'Use this route to check for new messages or list all messages from one or more of your message boxes.',
   parameters: {
@@ -59,7 +59,7 @@ module.exports = {
       let messageBoxes = []
       // Get message box ids that belong to me and are in my list of types.
       if (req.body.filterBy && req.body.filterBy.messageBoxTypes) {
-        messageBoxes = await knex('messageBox').where({ identityKey: req.authrite.identityKey }).whereIn('type', req.body.messageBoxTypes).select('type')
+        messageBoxes = await knex('messageBox').where({ identityKey: req.authrite.identityKey }).whereIn('type', req.body.filterBy.messageBoxTypes).select('type')
       } else {
         messageBoxes = await knex('messageBox').where({ identityKey: req.authrite.identityKey }).select('type')
       }
