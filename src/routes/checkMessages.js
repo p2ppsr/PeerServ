@@ -1,57 +1,87 @@
+
 const {
   NODE_ENV
 } = process.env
 const knex =
-  NODE_ENV === 'production' || NODE_ENV === 'staging'
-    ? require('knex')(require('../../knexfile.js').production)
-    : require('knex')(require('../../knexfile.js').development)
+      NODE_ENV === 'production' || NODE_ENV === 'staging'
+        ? require('knex')(require('../../knexfile.js').production)
+        : require('knex')(require('../../knexfile.js').development)
 
 module.exports = {
   type: 'post',
-  path: '/checkMessages',
+  path: '/listMessages',
   knex,
-  summary: 'Use this route to check for any messages that have not been acknowledged yet.',
+  summary: 'Use this route to check for new messages or list all messages from one or more of your message boxes.',
   parameters: {
-    messageBoxTypes: 'An array of the messageBox types you would like to check for new messages. If none are provided, all messageBoxes checked.'
+    filterBy: {
+      messageBoxTypes: 'An array of the messageBoxTypes you would like to get messages from. If none are provided, all messageBoxes will be included.',
+      acknowledged: false
+    },
+    isReceiving: true
   },
   exampleResponse: {
     status: 'success',
     messages: [{
-      body: '',
       sender: 'xyz',
-      type: 'abc',
-      created_at: '2022-12-29T17:30:25'
+      messageBoxId: 'abc',
+      body: ''
     }]
   },
-  errors: [],
+  errors: [
+    'ERR_MESSAGEBOX_NOT_FOUND'
+  ],
   func: async (req, res) => {
     try {
-      // TODO: Make use of list.
-      let messageBoxes = []
-      // Get message box ids that belong to me and are in my list of types.
-      if (req.body.messageBoxTypes) {
-        messageBoxes = await knex('messageBox').where({ identityKey: req.authrite.identityKey }).whereIn('type', req.body.messageBoxTypes).select('type')
-      } else {
-        messageBoxes = await knex('messageBox').where({ identityKey: req.authrite.identityKey }).select('type')
-      }
-
-      // Check for messages that haven't been recieved yet
+      // Get all my available messages
+      // Note: Maybe there should be a filter applied here?
       let messages = await knex('messages').where({
-        recipient: req.authrite.identityKey,
-        acknowledged: false
-      }).select('body', 'sender', 'type', 'created_at')
+        recipient: req.authrite.identityKey
+      }).select('body', 'sender', 'type', 'acknowledged', 'created_at', 'updated_at')
 
-      // Just return if there are no new messages
-      if (messages && messages.length === 0) {
+      if (!req.body.filterBy) {
+        // Return all messages
         return res.status(200).json({
           status: 'success',
           messages
         })
       }
 
-      // Filter for only the messages in the message boxes requested
-      if (messageBoxes && messageBoxes.length !== 0) {
-        messages = messages.filter(m => messageBoxes.some(x => x.type === m.type))
+      // If the user is receiving the message contents, and not just listing,
+      // only unacknowledged messages should be returned.
+      // Note: Is there a better way to handle this?
+      if (req.body.isReceiving) {
+        req.body.filterBy = {
+          ...req.body.filterBy,
+          acknowledged: false
+        }
+      }
+
+      let messageBoxes = []
+      // Get message box ids that belong to me and are in my list of types.
+      if (req.body.filterBy && req.body.filterBy.messageBoxTypes) {
+        messageBoxes = await knex('messageBox').where({ identityKey: req.authrite.identityKey }).whereIn('type', req.body.messageBoxTypes).select('type')
+      } else {
+        messageBoxes = await knex('messageBox').where({ identityKey: req.authrite.identityKey }).select('type')
+      }
+
+      // Only return messages that match the filters provided
+      messages = messages.filter(m => {
+        let validMessage = false
+        if (req.body.filterBy.messageBoxTypes && req.body.filterBy.messageBoxTypes.length !== 0) {
+          validMessage = messageBoxes.some(x => x.type === m.type)
+        }
+        if (req.body.filterBy.acknowledged) {
+          validMessage = m.acknowledged === req.body.filterBy.acknowledged
+        }
+        return validMessage
+      })
+
+      // Just return if the messages aren't being processed?
+      if (!req.body.isReceiving) {
+        return res.status(200).json({
+          status: 'success',
+          messages
+        })
       }
 
       // Mark the message as acknowledged
@@ -64,11 +94,6 @@ module.exports = {
             acknowledged: false
           }).whereIn('type', messageBoxes.map(mB => mB.type))
             .update({ acknowledged: true, updated_at: new Date() })
-        } else {
-          await knex('messages').where({
-            recipient: req.authrite.identityKey,
-            acknowledged: false
-          }).update({ acknowledged: true, updated_at: new Date() })
         }
       }
 
@@ -84,7 +109,6 @@ module.exports = {
           updated_at: new Date()
         })
 
-      // Return the required info to the sender
       return res.status(200).json({
         status: 'success',
         messages
@@ -93,7 +117,7 @@ module.exports = {
       console.error(e)
       return res.status(500).json({
         status: 'error',
-        code: 'ERR_INTERNAL',
+        code: 'ERR_INTERNAL_ERROR',
         description: 'An internal error has occurred while checking messages.'
       })
     }

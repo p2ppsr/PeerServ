@@ -73,7 +73,7 @@ module.exports = {
       }).select('type')
 
       // Insert the new message
-      // TODO: encrypt the message
+      // TODO: encrypt the message?
       await knex('messages').insert({
         sender: req.authrite.identityKey,
         recipient: req.body.message.recipient,
