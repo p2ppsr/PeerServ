@@ -47,7 +47,7 @@ module.exports = {
       }
 
       // If the user is receiving the message contents, and not just listing,
-      // only unacknowledged messages should be returned.
+      // only unacknowledged messages should be returned
       // Note: Is there a better way to handle this?
       if (req.body.isReceiving) {
         req.body.filterBy = {
