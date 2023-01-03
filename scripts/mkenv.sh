@@ -17,12 +17,13 @@ echo "Appending environment variables to $1"
 perl -E'
   say "        - name: $_
           value: \x27$ENV{$_}\x27" for @ARGV;
-' NODE_ENV \
+' SERVER_MODE \
+    NODE_ENV \
     MIGRATE_KEY \
+    ROUTING_PREFIX \
     KNEX_DB_CONNECTION \
     KNEX_DB_CLIENT \
-    SERVER_PRIVATE_KEY \
-    HOSTING_DOMAIN >> $1
+    SERVER_PRIVATE_KEY >> $1
 
 echo "Built! Contents of $1:"
 cat $1
