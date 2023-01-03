@@ -22,8 +22,7 @@ perl -E'
     KNEX_DB_CONNECTION \
     KNEX_DB_CLIENT \
     SERVER_PRIVATE_KEY \
-    HOSTING_DOMAIN \
-    DOJO_URL >> $1
+    HOSTING_DOMAIN >> $1
 
 echo "Built! Contents of $1:"
 cat $1
