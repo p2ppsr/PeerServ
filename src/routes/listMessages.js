@@ -32,7 +32,7 @@ module.exports = {
       // Get all my available messages
       let messages = await knex('messages').where({
         recipient: req.authrite.identityKey
-      }).select('messageId', 'body', 'sender', 'acknowledged', 'created_at', 'updated_at')
+      }).select('messageId', 'messageBoxId', 'body', 'sender', 'acknowledged', 'created_at', 'updated_at')
 
       if (!req.body.messageBoxTypes) {
         // Return all messages
