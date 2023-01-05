@@ -4,6 +4,8 @@ module.exports = {
   ],
   postAuthrite: [
     require('./sendMessage'),
-    require('./checkMessages')
+    require('./listMessages'),
+    require('./readMessage'),
+    require('./acknowledgeMessage')
   ]
 }

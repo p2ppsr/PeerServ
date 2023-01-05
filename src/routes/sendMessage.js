@@ -25,35 +25,13 @@ module.exports = {
   ],
   func: async (req, res) => {
     try {
-      // Find valid messageBox for the recipient
-      // const [sender] = await knex('users').where({
-      //   identityKey: req.authrite.identityKey
-      // }).select('userId')
-
-      // if (!sender) {
-      //   [recipient] = await knex('users').insert({
-      //     identityKey: req.body.message.recipient
-      //   }, ['userId'])
-      // }
-
-      // let [recipient] = await knex('users').where({
-      //   identityKey: req.body.message.recipient
-      // }).select('userId')
-
-      // if (!recipient) {
-      //   [recipient] = await knex('users').insert({
-      //     identityKey: req.body.message.recipient
-      //   }, ['userId'])
-      // }
-
       // Select the message box for the given message type
       let messageBox = await knex('messageBox')
         .where({
           identityKey: req.body.message.recipient,
           type: req.body.message.type
         }).update({
-          updated_at: new Date(),
-          newMessages: true
+          updated_at: new Date()
         })
       // If this messageBox does not exist yet, create it. Note: Is this the sender's job, or the recipient?
       if (!messageBox) {
@@ -61,24 +39,23 @@ module.exports = {
           identityKey: req.body.message.recipient,
           type: req.body.message.type,
           created_at: new Date(),
-          updated_at: new Date(),
-          newMessages: true
+          updated_at: new Date()
         })
       }
 
-      // Retrieve the newly created/updated messageBox (note: knex should simplify this)
+      // Note: Simplify with knex?
       [messageBox] = await knex('messageBox').where({
         identityKey: req.body.message.recipient,
         type: req.body.message.type
-      }).select('type')
+      }).select('messageBoxId')
 
       // Insert the new message
-      // TODO: encrypt the message?
+      // Note: Should any encryption be enforced here?
       await knex('messages').insert({
+        messageBoxId: messageBox.messageBoxId, // Foreign key
         sender: req.authrite.identityKey,
         recipient: req.body.message.recipient,
-        type: messageBox.type,
-        body: JSON.stringify(req.body.message.body),
+        body: JSON.stringify(req.body.message.body), // String or buffer?
         created_at: new Date(),
         updated_at: new Date()
       })
