@@ -13,34 +13,31 @@ module.exports = {
   knex,
   summary: 'Use this route to read a message',
   parameters: {
-    messageBoxType: 'payment_inbox',
+    messageBox: 'payment_inbox', // Is this required? // messageIds should be unique
     messageId: 123
   },
   exampleResponse: {
     status: 'success',
     messages: [{
-      sender: 'xyz',
-      messageBoxId: 'abc',
-      body: ''
+      sender: '028d37b941208cd6b8a4c28288eda5f2f16c2b3ab0fcb6d13c18b47fe37b971fc1',
+      messageBoxId: 42,
+      body: '{}'
     }]
   },
-  errors: [
-    'ERR_MESSAGEBOX_NOT_FOUND'
-  ],
   func: async (req, res) => {
     try {
       // Validate request body
-      if (!req.body.messageBoxType) {
+      if (!req.body.messageBox) {
         return res.status(400).json({
           status: 'error',
-          code: 'ERR_MESSAGEBOX_TYPE_REQUIRED',
-          description: 'Please provide a message box type to read from!'
+          code: 'ERR_MESSAGEBOX_REQUIRED',
+          description: 'Please provide a message box to read from!'
         })
       }
       if (!req.body.messageId) {
         return res.status(400).json({
           status: 'error',
-          code: 'ERR_MESSAGEID_REQUIRED',
+          code: 'ERR_MESSAGE_ID_REQUIRED',
           description: 'Please provide the ID of the message to read!'
         })
       }
@@ -48,14 +45,14 @@ module.exports = {
       // Get the messageBox to read from
       const [messageBox] = await knex('messageBox').where({
         identityKey: req.authrite.identityKey,
-        type: req.body.messageBoxType
+        type: req.body.messageBox
       }).select('messageBoxId')
 
       if (!messageBox) {
         return res.status(400).json({
           status: 'error',
-          code: 'ERR_MESSAGEBOX_TYPE_NOT_FOUND',
-          description: 'Requested messageBox type could not be found!'
+          code: 'ERR_MESSAGEBOX_NOT_FOUND',
+          description: 'Requested messageBox could not be found!'
         })
       }
 

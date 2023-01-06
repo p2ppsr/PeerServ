@@ -30,29 +30,35 @@
         Facilitates general secure peer-to-peer message exchanges between parties.
       </p>
       <p>Learn more on <a href='https://github.com/p2ppsr/peerserv'>GitHub</a></p>
-      <p>For a UI that can interact with PeerServ, go <a href='https://peerserv-ui.babbage.systems'>here</a>.</p>
+      <p>For a UI that can interact with PeerServ, go <a href='https://github.com/p2ppsr/peerserv-tokenator-demo'>here</a>.</p>
       <h2>Endpoint Documentation</h2>
-        <% for (let i in routes) { %>
-        <h3>
-          <b class='method'><%= routes[i].type %></b> <%= HOSTING_DOMAIN %><%= ROUTING_PREFIX %><%= routes[i].path %>
-        </h3>
-        <p>
-          <%= routes[i].summary %>
-        </p>
-        <% if (typeof routes[i].parameters === 'object') { %>
-          <h4>Parameters</h4>
-          <ul>
-            <% Object.entries(routes[i].parameters).forEach(([k, v]) => { %>
-              <li><b><%= k %></b>: <%= v %></li>
-            <% }) %>
-          </ul>
-        <% } %>
-        <% if (typeof routes[i].exampleResponse === 'object') { %>
-          <h4>Example Response</h4>
-          <pre><%= JSON.stringify(routes[i].exampleResponse, null, 2) %></pre>
-        <% } %>
-      <% } %>
-      <p>Built with love in 2022 by the Babbage Team</p>
+      <% for (let i in routes) { %>
+        <% if (routes[i].hidden !== true) { %>
+         <h3>
+           <b class='method'><%= routes[i].type %></b> <%= routes[i].path %>
+         </h3>
+         <p>
+           <%= routes[i].summary %>
+         </p>
+         <% if (typeof routes[i].parameters === 'object') { %>
+           <h4>Parameters</h4>
+           <ul>
+              <% Object.entries(routes[i].parameters).forEach(([k, v]) => { %>
+                <% if (typeof v === 'object') { %>
+                  <pre><%= JSON.stringify(routes[i].parameters, null, 2) %></pre>
+                <% } else { %>
+                  <li><b><%= k %></b>: <%= v %></li>
+                <% } %>
+              <% }) %>
+           </ul>
+         <% } %>
+         <% if (typeof routes[i].exampleResponse === 'object') { %>
+           <h4>Example Response</h4>
+           <pre><%= JSON.stringify(routes[i].exampleResponse, null, 2) %></pre>
+         <% } %>
+       <% } %>
+   <% } %>
+      <p>Built with love in 2023 by the Babbage Team</p>
     </div>
   </body>
 </html>

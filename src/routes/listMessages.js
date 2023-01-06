@@ -13,15 +13,15 @@ module.exports = {
   knex,
   summary: 'Use this route to check for new messages or list all messages from one or more of your message boxes.',
   parameters: {
-    messageBoxTypes: 'An array of the messageBoxTypes you would like to get messages from. If none are provided, all messageBoxes will be included.',
+    messageBoxes: 'An array of the messageBoxes you would like to get messages from. If none are provided, all messageBoxes will be included.',
     acknowledged: false
   },
   exampleResponse: {
     status: 'success',
     messages: [{
-      sender: 'xyz',
-      messageBoxId: 'abc',
-      body: ''
+      sender: '028d37b941208cd6b8a4c28288eda5f2f16c2b3ab0fcb6d13c18b47fe37b971fc1',
+      messageBoxId: '42',
+      body: '{}'
     }]
   },
   errors: [
@@ -29,13 +29,14 @@ module.exports = {
   ],
   func: async (req, res) => {
     try {
-      // Get all my available messages
+      // Get all my available unread messages
       let messages = await knex('messages').where({
-        recipient: req.authrite.identityKey
-      }).select('messageId', 'messageBoxId', 'body', 'sender', 'acknowledged', 'created_at', 'updated_at')
+        recipient: req.authrite.identityKey,
+        acknowledged: false
+      }).select('messageId', 'messageBoxId', 'body', 'sender', 'created_at', 'updated_at')
 
-      if (!req.body.messageBoxTypes) {
-        // Return all messages
+      // Return all unacknowledged messages if no specific messageBoxes are provided
+      if (!req.body.messageBoxes || req.body.messageBoxes.length === 0) {
         return res.status(200).json({
           status: 'success',
           messages
@@ -44,22 +45,17 @@ module.exports = {
 
       let messageBoxes = []
       // Get message box ids that belong to me and are in my list of types.
-      if (req.body.messageBoxTypes && req.body.messageBoxTypes.length !== 0) {
-        messageBoxes = await knex('messageBox').where({ identityKey: req.authrite.identityKey }).whereIn('type', req.body.messageBoxTypes).select('type', 'messageBoxId')
-      } else {
-        messageBoxes = await knex('messageBox').where({ identityKey: req.authrite.identityKey }).select('type', 'messageBoxId')
-      }
+      messageBoxes = await knex('messageBox').where({
+        identityKey: req.authrite.identityKey
+      }).whereIn('type', req.body.messageBoxes).select('messageBoxId')
 
       // Only return messages from the requested messageBoxes
       messages = messages.filter(m => {
-        let validMessage = false
-        if (req.body.messageBoxTypes && req.body.messageBoxTypes.length !== 0) {
-          validMessage = messageBoxes.some(x => x.messageBoxId === m.messageBoxId)
+        let includeMessage = false
+        if (req.body.messageBoxes && req.body.messageBoxes.length !== 0) {
+          includeMessage = messageBoxes.some(x => x.messageBoxId === m.messageBoxId)
         }
-        if ('acknowledged' in req.body) {
-          validMessage = Boolean(m.acknowledged) === req.body.acknowledged
-        }
-        return validMessage
+        return includeMessage
       })
 
       return res.status(200).json({
