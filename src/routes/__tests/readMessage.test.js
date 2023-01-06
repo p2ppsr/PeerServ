@@ -40,7 +40,6 @@ describe('readMessage', () => {
         identityKey: 'mockIdKey'
       },
       body: {
-        messageBox: 'payment_inbox',
         messageId: 123
       }
     }
@@ -50,16 +49,7 @@ describe('readMessage', () => {
     queryTracker.uninstall()
     mockKnex.unmock(readMessage.knex)
   })
-  it('Returns error if messageBox type is missing', async () => {
-    delete validReq.body.messageBox
-    await readMessage.func(validReq, mockRes)
-    expect(mockRes.status).toHaveBeenCalledWith(400)
-    expect(mockRes.json).toHaveBeenCalledWith(expect.objectContaining({
-      status: 'error',
-      code: 'ERR_MESSAGEBOX_REQUIRED'
-    }))
-  })
-  it('Returns error if messageId is missing', async () => {
+  it('Throws an error if messageId is missing', async () => {
     delete validReq.body.messageId
     await readMessage.func(validReq, mockRes)
     expect(mockRes.status).toHaveBeenCalledWith(400)
@@ -68,68 +58,28 @@ describe('readMessage', () => {
       code: 'ERR_MESSAGE_ID_REQUIRED'
     }))
   })
-  it('Selects an existing messageBox', async () => {
-    queryTracker.on('query', (q, s) => {
-      if (s === 1) {
-        expect(q.method).toEqual('select')
-        expect(q.sql).toEqual(
-          'select `messageBoxId` from `messageBox` where `identityKey` = ? and `type` = ?'
-        )
-        expect(q.bindings).toEqual([
-          'mockIdKey',
-          'payment_inbox'
-        ])
-        q.response([validMessageBox])
-      } else if (s === 2) {
-        q.response([validMessage])
-      } else {
-        q.response([])
-      }
-    })
-
-    await readMessage.func(validReq, mockRes)
-    expect(mockRes.status).toHaveBeenCalledWith(200)
-    expect(mockRes.json).toHaveBeenCalledWith(expect.objectContaining(validRes))
-  })
-  it('Throws an error if messageBox can not be found', async () => {
-    queryTracker.on('query', (q, s) => {
-      if (s === 1) {
-        expect(q.method).toEqual('select')
-        expect(q.sql).toEqual(
-          'select `messageBoxId` from `messageBox` where `identityKey` = ? and `type` = ?'
-        )
-        expect(q.bindings).toEqual([
-          'mockIdKey',
-          'payment_inbox'
-        ])
-        q.response([])
-      } else {
-        q.response([])
-      }
-    })
+  it('Throws an error if messageId is not a Number', async () => {
+    validReq.body.messageId = '42'
     await readMessage.func(validReq, mockRes)
     expect(mockRes.status).toHaveBeenCalledWith(400)
     expect(mockRes.json).toHaveBeenCalledWith(expect.objectContaining({
       status: 'error',
-      code: 'ERR_MESSAGEBOX_NOT_FOUND',
-      description: 'Requested messageBox could not be found!'
+      code: 'ERR_INVALID_MESSAGE_ID',
+      description: 'Message ID must be formatted as a Number!'
     }))
   })
   it('Acknowledges a message as read', async () => {
     queryTracker.on('query', (q, s) => {
       if (s === 1) {
-        q.response([validMessageBox])
-      } else if (s === 2) {
         q.response([validMessage])
-      } else if (s === 3) {
+      } else if (s === 2) {
         expect(q.method).toEqual('update')
         expect(q.sql).toEqual(
-          'update `messages` set `acknowledged` = ? where `recipient` = ? and `messageBoxId` = ? and `messageId` = ?'
+          'update `messages` set `acknowledged` = ? where `recipient` = ? and `messageId` = ?'
         )
         expect(q.bindings).toEqual([
           true,
           'mockIdKey',
-          42,
           123
         ])
         q.response(true)

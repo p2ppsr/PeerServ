@@ -13,7 +13,6 @@ module.exports = {
   knex,
   summary: 'Use this route to read a message',
   parameters: {
-    messageBox: 'payment_inbox', // Is this required? // messageIds should be unique
     messageId: 123
   },
   exampleResponse: {
@@ -27,13 +26,6 @@ module.exports = {
   func: async (req, res) => {
     try {
       // Validate request body
-      if (!req.body.messageBox) {
-        return res.status(400).json({
-          status: 'error',
-          code: 'ERR_MESSAGEBOX_REQUIRED',
-          description: 'Please provide a message box to read from!'
-        })
-      }
       if (!req.body.messageId) {
         return res.status(400).json({
           status: 'error',
@@ -41,25 +33,17 @@ module.exports = {
           description: 'Please provide the ID of the message to read!'
         })
       }
-
-      // Get the messageBox to read from
-      const [messageBox] = await knex('messageBox').where({
-        identityKey: req.authrite.identityKey,
-        type: req.body.messageBox
-      }).select('messageBoxId')
-
-      if (!messageBox) {
+      if (typeof req.body.messageId !== 'number') {
         return res.status(400).json({
           status: 'error',
-          code: 'ERR_MESSAGEBOX_NOT_FOUND',
-          description: 'Requested messageBox could not be found!'
+          code: 'ERR_INVALID_MESSAGE_ID',
+          description: 'Message ID must be formatted as a Number!'
         })
       }
 
       // Get requested message
       const [message] = await knex('messages').where({
         recipient: req.authrite.identityKey,
-        messageBoxId: messageBox.messageBoxId,
         messageId: req.body.messageId
       }).select('messageId', 'messageBoxId', 'body', 'sender', 'created_at', 'updated_at')
 
@@ -74,7 +58,6 @@ module.exports = {
       // Mark this message as acknowledged, and ready for deletion
       await knex('messages').where({
         recipient: req.authrite.identityKey,
-        messageBoxId: messageBox.messageBoxId,
         messageId: req.body.messageId
       }).update({
         acknowledged: true

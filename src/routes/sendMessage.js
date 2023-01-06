@@ -15,7 +15,7 @@ module.exports = {
     message: {
       recipient: '028d37b941208cd6b8a4c28288eda5f2f16c2b3ab0fcb6d13c18b47fe37b971fc1',
       messageBox: 'payment_inbox',
-      body: ''
+      body: '{}'
     }
   },
   exampleResponse: {
@@ -23,12 +23,19 @@ module.exports = {
   },
   func: async (req, res) => {
     try {
-      // Validate request body
+      // Request Body Validation
       if (!req.body.message) {
         return res.status(400).json({
           status: 'error',
           code: 'ERR_MESSAGE_REQUIRED',
-          description: 'Please provide a message to send!'
+          description: 'Please provide a valid message to send!'
+        })
+      }
+      if (typeof req.body.message !== 'object') {
+        return res.status(400).json({
+          status: 'error',
+          code: 'ERR_INVALID_MESSAGE',
+          description: 'Message properties must be contained in a message object!'
         })
       }
       if (!req.body.message.recipient) {
@@ -38,6 +45,13 @@ module.exports = {
           description: 'Please provide a recipient to send the message to!'
         })
       }
+      if (typeof req.body.message.recipient !== 'string') {
+        return res.status(400).json({
+          status: 'error',
+          code: 'ERR_INVALID_RECIPIENT',
+          description: 'Recipient must be a compressed public key formatted as a hex string!'
+        })
+      }
       if (!req.body.message.messageBox) {
         return res.status(400).json({
           status: 'error',
@@ -45,11 +59,25 @@ module.exports = {
           description: 'Please provide a messageBox to send this message into!'
         })
       }
+      if (typeof req.body.message.messageBox !== 'string') {
+        return res.status(400).json({
+          status: 'error',
+          code: 'ERR_INVALID_MESSAGEBOX',
+          description: 'MessageBox must be a string!'
+        })
+      }
       if (!req.body.message.body) {
         return res.status(400).json({
           status: 'error',
           code: 'ERR_MESSAGE_BODY_REQUIRED',
           description: 'Every message must contain a body!'
+        })
+      }
+      if (typeof req.body.message.body !== 'string') {
+        return res.status(400).json({
+          status: 'error',
+          code: 'ERR_INVALID_MESSAGE_BODY',
+          description: 'Message body must be formatted as a string!'
         })
       }
 
@@ -61,7 +89,7 @@ module.exports = {
         }).update({
           updated_at: new Date()
         })
-      // If this messageBox does not exist yet, create it. Note: Is this the sender's job, or the recipient?
+      // If this messageBox does not exist yet, create it.
       if (!messageBox) {
         await knex('messageBox').insert({
           identityKey: req.body.message.recipient,
@@ -71,19 +99,19 @@ module.exports = {
         })
       }
 
-      // Note: Simplify with knex?
+      // Select the newly updated/created messageBox Id
       [messageBox] = await knex('messageBox').where({
         identityKey: req.body.message.recipient,
         type: req.body.message.messageBox
       }).select('messageBoxId')
 
       // Insert the new message
-      // Note: Should any encryption be enforced here?
+      // Note: Additional encryption could be enforced here
       await knex('messages').insert({
         messageBoxId: messageBox.messageBoxId, // Foreign key
         sender: req.authrite.identityKey,
         recipient: req.body.message.recipient,
-        body: JSON.stringify(req.body.message.body), // String or buffer?
+        body: JSON.stringify(req.body.message.body), // Should a buffer be supported in the future?
         created_at: new Date(),
         updated_at: new Date()
       })

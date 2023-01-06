@@ -30,11 +30,25 @@ module.exports = {
           description: 'Please provide a message box id to read from!'
         })
       }
+      if (typeof req.body.messageBoxId !== 'number') {
+        return res.status(400).json({
+          status: 'error',
+          code: 'ERR_INVALID_MESSAGEBOX_ID',
+          description: 'MessageBox ID must be formatted as a Number!'
+        })
+      }
       if (!req.body.messageId) {
         return res.status(400).json({
           status: 'error',
           code: 'ERR_MESSAGE_ID_REQUIRED',
           description: 'Please provide the ID of the message to read!'
+        })
+      }
+      if (typeof req.body.messageId !== 'number') {
+        return res.status(400).json({
+          status: 'error',
+          code: 'ERR_INVALID_MESSAGE_ID',
+          description: 'Message ID must be formatted as a Number!'
         })
       }
 

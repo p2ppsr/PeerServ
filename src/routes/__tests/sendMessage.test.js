@@ -42,7 +42,7 @@ describe('sendMessage', () => {
     queryTracker.uninstall()
     mockKnex.unmock(sendMessage.knex)
   })
-  it('Returns error if message is missing', async () => {
+  it('Throws an error if message is missing', async () => {
     delete validReq.body.message
     await sendMessage.func(validReq, mockRes)
     expect(mockRes.status).toHaveBeenCalledWith(400)
@@ -51,7 +51,17 @@ describe('sendMessage', () => {
       code: 'ERR_MESSAGE_REQUIRED'
     }))
   })
-  it('Returns error if recipient is missing', async () => {
+  it('Throws an error if message is not an object', async () => {
+    validReq.body.message = 'My message to send'
+    await sendMessage.func(validReq, mockRes)
+    expect(mockRes.status).toHaveBeenCalledWith(400)
+    expect(mockRes.json).toHaveBeenCalledWith(expect.objectContaining({
+      status: 'error',
+      code: 'ERR_INVALID_MESSAGE',
+      description: 'Message properties must be contained in a message object!'
+    }))
+  })
+  it('Throws an error if recipient is missing', async () => {
     delete validReq.body.message.recipient
     await sendMessage.func(validReq, mockRes)
     expect(mockRes.status).toHaveBeenCalledWith(400)
@@ -60,13 +70,33 @@ describe('sendMessage', () => {
       code: 'ERR_RECIPIENT_REQUIRED'
     }))
   })
-  it('Returns error if messageBox type is missing', async () => {
+  it('Throws an error if recipient is not a string', async () => {
+    validReq.body.message.recipient = Buffer.from('bob')
+    await sendMessage.func(validReq, mockRes)
+    expect(mockRes.status).toHaveBeenCalledWith(400)
+    expect(mockRes.json).toHaveBeenCalledWith(expect.objectContaining({
+      status: 'error',
+      code: 'ERR_INVALID_RECIPIENT',
+      description: 'Recipient must be a compressed public key formatted as a hex string!'
+    }))
+  })
+  it('Returns error if messageBox is missing', async () => {
     delete validReq.body.message.messageBox
     await sendMessage.func(validReq, mockRes)
     expect(mockRes.status).toHaveBeenCalledWith(400)
     expect(mockRes.json).toHaveBeenCalledWith(expect.objectContaining({
       status: 'error',
       code: 'ERR_MESSAGEBOX_REQUIRED'
+    }))
+  })
+  it('Throws an error if messageBox is not a string', async () => {
+    validReq.body.message.messageBox = Buffer.from('payment_inbox')
+    await sendMessage.func(validReq, mockRes)
+    expect(mockRes.status).toHaveBeenCalledWith(400)
+    expect(mockRes.json).toHaveBeenCalledWith(expect.objectContaining({
+      status: 'error',
+      code: 'ERR_INVALID_MESSAGEBOX',
+      description: 'MessageBox must be a string!'
     }))
   })
   it('Returns error if message body is missing', async () => {
@@ -76,6 +106,16 @@ describe('sendMessage', () => {
     expect(mockRes.json).toHaveBeenCalledWith(expect.objectContaining({
       status: 'error',
       code: 'ERR_MESSAGE_BODY_REQUIRED'
+    }))
+  })
+  it('Throws an error if the message body is not a string', async () => {
+    validReq.body.message.body = Buffer.from('this is my message body')
+    await sendMessage.func(validReq, mockRes)
+    expect(mockRes.status).toHaveBeenCalledWith(400)
+    expect(mockRes.json).toHaveBeenCalledWith(expect.objectContaining({
+      status: 'error',
+      code: 'ERR_INVALID_MESSAGE_BODY',
+      description: 'Message body must be formatted as a string!'
     }))
   })
   it('Queries for messageBox that does not yet exist', async () => {

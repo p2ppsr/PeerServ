@@ -29,6 +29,17 @@ module.exports = {
   ],
   func: async (req, res) => {
     try {
+      // Validate Request Body
+      if (req.body.messageBoxes) {
+        // MessageBoxes must be an array of strings
+        if (!Array.isArray(req.body.messageBoxes) || req.body.messageBoxes.some(x => typeof x !== 'string')) {
+          return res.status(400).json({
+            status: 'error',
+            code: 'ERR_INVALID_MESSAGEBOX',
+            description: 'MessageBoxes must be an array of strings!'
+          })
+        }
+      }
       // Get all my available unread messages
       let messages = await knex('messages').where({
         recipient: req.authrite.identityKey,

@@ -34,7 +34,7 @@ describe('listMessages', () => {
       },
       {
         messageBoxId: 31,
-        messageBox: 'payment_inbox'
+        messageBox: 'metanet_icu_inbox'
       }
     ]
 
@@ -53,6 +53,32 @@ describe('listMessages', () => {
     jest.clearAllMocks()
     queryTracker.uninstall()
     mockKnex.unmock(listMessages.knex)
+  })
+  it('Throws an error if messageBoxes is not an array', async () => {
+    validReq.body.messageBoxes = 'payment_inbox'
+    queryTracker.on('query', (q, s) => {
+      q.response([])
+    })
+    await listMessages.func(validReq, mockRes)
+    expect(mockRes.status).toHaveBeenCalledWith(400)
+    expect(mockRes.json).toHaveBeenCalledWith(expect.objectContaining({
+      status: 'error',
+      code: 'ERR_INVALID_MESSAGEBOX',
+      description: 'MessageBoxes must be an array of strings!'
+    }))
+  })
+  it('Throws an error if any element in messageBoxes is not a string', async () => {
+    validReq.body.messageBoxes = ['payment_inbox', 'valid Inbox', 24]
+    queryTracker.on('query', (q, s) => {
+      q.response([])
+    })
+    await listMessages.func(validReq, mockRes)
+    expect(mockRes.status).toHaveBeenCalledWith(400)
+    expect(mockRes.json).toHaveBeenCalledWith(expect.objectContaining({
+      status: 'error',
+      code: 'ERR_INVALID_MESSAGEBOX',
+      description: 'MessageBoxes must be an array of strings!'
+    }))
   })
   it('Selects all messages if no messageBoxes are provided', async () => {
     validReq.body.messageBoxes = []

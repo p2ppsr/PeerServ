@@ -32,7 +32,7 @@ describe('acknowledgeMessage', () => {
     queryTracker.uninstall()
     mockKnex.unmock(acknowledgeMessage.knex)
   })
-  it('Returns error if messageBox ID is missing', async () => {
+  it('Throws an error if messageBox ID is missing', async () => {
     delete validReq.body.messageBoxId
     await acknowledgeMessage.func(validReq, mockRes)
     expect(mockRes.status).toHaveBeenCalledWith(400)
@@ -41,13 +41,33 @@ describe('acknowledgeMessage', () => {
       code: 'ERR_MESSAGEBOX_ID_REQUIRED'
     }))
   })
-  it('Returns error if messageId is missing', async () => {
+  it('Throws an error if messageBox ID is not a number', async () => {
+    validReq.body.messageBoxId = '24'
+    await acknowledgeMessage.func(validReq, mockRes)
+    expect(mockRes.status).toHaveBeenCalledWith(400)
+    expect(mockRes.json).toHaveBeenCalledWith(expect.objectContaining({
+      status: 'error',
+      code: 'ERR_INVALID_MESSAGEBOX_ID',
+      description: 'MessageBox ID must be formatted as a Number!'
+    }))
+  })
+  it('Throws an error if messageId is missing', async () => {
     delete validReq.body.messageId
     await acknowledgeMessage.func(validReq, mockRes)
     expect(mockRes.status).toHaveBeenCalledWith(400)
     expect(mockRes.json).toHaveBeenCalledWith(expect.objectContaining({
       status: 'error',
       code: 'ERR_MESSAGE_ID_REQUIRED'
+    }))
+  })
+  it('Throws an error if message ID is not a number', async () => {
+    validReq.body.messageId = '24'
+    await acknowledgeMessage.func(validReq, mockRes)
+    expect(mockRes.status).toHaveBeenCalledWith(400)
+    expect(mockRes.json).toHaveBeenCalledWith(expect.objectContaining({
+      status: 'error',
+      code: 'ERR_INVALID_MESSAGE_ID',
+      description: 'Message ID must be formatted as a Number!'
     }))
   })
   it('Deletes an acknowledged message', async () => {
@@ -63,7 +83,7 @@ describe('acknowledgeMessage', () => {
           123,
           true
         ])
-        q.response([])
+        q.response(true)
       } else {
         q.response([])
       }
