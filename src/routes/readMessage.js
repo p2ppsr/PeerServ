@@ -11,9 +11,9 @@ module.exports = {
   type: 'post',
   path: '/readMessage',
   knex,
-  summary: 'Use this route to read a message',
+  summary: 'Use this route to read one or more messages',
   parameters: {
-    messageId: 123
+    messageIds: [123]
   },
   exampleResponse: {
     status: 'success',
@@ -26,55 +26,54 @@ module.exports = {
   func: async (req, res) => {
     try {
       // Validate request body
-      if (!req.body.messageId) {
+      if (!req.body.messageIds) {
         return res.status(400).json({
           status: 'error',
           code: 'ERR_MESSAGE_ID_REQUIRED',
-          description: 'Please provide the ID of the message to read!'
+          description: 'Please provide the ID of the message(s) to read!'
         })
       }
-      if (typeof req.body.messageId !== 'number') {
+      if (!Array.isArray(req.body.messageIds) || req.body.messageIds.some(x => typeof x !== 'number')) {
         return res.status(400).json({
           status: 'error',
           code: 'ERR_INVALID_MESSAGE_ID',
-          description: 'Message ID must be formatted as a Number!'
+          description: 'Message IDs must be formatted as an Array of Numbers!'
         })
       }
 
-      // Get requested message
-      const [message] = await knex('messages').where({
+      // Get requested message(s)
+      const messages = await knex('messages').where({
         recipient: req.authrite.identityKey,
-        messageId: req.body.messageId
-      }).select('messageId', 'messageBoxId', 'body', 'sender', 'created_at', 'updated_at')
-
-      if (!message) {
+        acknowledged: false
+      }).whereIn('messageId', req.body.messageIds)
+        .select('messageId', 'messageBoxId', 'body', 'sender', 'created_at', 'updated_at')
+        // Test with just one mismatch...?
+      if (!messages) {
         return res.status(400).json({
           status: 'error',
           code: 'ERR_MESSAGE_NOT_FOUND',
-          description: 'Requested message could not be found!'
+          description: 'One or more messages could not be found!'
         })
       }
-
-      // Mark this message as acknowledged, and ready for deletion
+      // Mark message(s) as acknowledged, and ready for deletion
       await knex('messages').where({
         recipient: req.authrite.identityKey,
-        messageId: req.body.messageId
-      }).update({
-        acknowledged: true
-      })
+        acknowledged: false
+      }).whereIn('messageId', req.body.messageIds)
+        .update({ acknowledged: true, updated_at: new Date() })
 
-      // Message is returned
-      // Note: It is up to the client to send an acknowledgement to the server
+      // Return all matching messages
+      // Note: It is up to the client to send acknowledgement(s) to the server
       return res.status(200).json({
         status: 'success',
-        message
+        messages
       })
     } catch (e) {
       console.error(e)
       return res.status(500).json({
         status: 'error',
         code: 'ERR_INTERNAL_ERROR',
-        description: 'An internal error has occurred while reading message.'
+        description: 'An internal error has occurred while reading message(s).'
       })
     }
   }

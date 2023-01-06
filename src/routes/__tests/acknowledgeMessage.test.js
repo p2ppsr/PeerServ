@@ -22,8 +22,7 @@ describe('acknowledgeMessage', () => {
         identityKey: 'mockIdKey'
       },
       body: {
-        messageBoxId: 42,
-        messageId: 123
+        messageIds: [123]
       }
     }
   })
@@ -32,27 +31,8 @@ describe('acknowledgeMessage', () => {
     queryTracker.uninstall()
     mockKnex.unmock(acknowledgeMessage.knex)
   })
-  it('Throws an error if messageBox ID is missing', async () => {
-    delete validReq.body.messageBoxId
-    await acknowledgeMessage.func(validReq, mockRes)
-    expect(mockRes.status).toHaveBeenCalledWith(400)
-    expect(mockRes.json).toHaveBeenCalledWith(expect.objectContaining({
-      status: 'error',
-      code: 'ERR_MESSAGEBOX_ID_REQUIRED'
-    }))
-  })
-  it('Throws an error if messageBox ID is not a number', async () => {
-    validReq.body.messageBoxId = '24'
-    await acknowledgeMessage.func(validReq, mockRes)
-    expect(mockRes.status).toHaveBeenCalledWith(400)
-    expect(mockRes.json).toHaveBeenCalledWith(expect.objectContaining({
-      status: 'error',
-      code: 'ERR_INVALID_MESSAGEBOX_ID',
-      description: 'MessageBox ID must be formatted as a Number!'
-    }))
-  })
   it('Throws an error if messageId is missing', async () => {
-    delete validReq.body.messageId
+    delete validReq.body.messageIds
     await acknowledgeMessage.func(validReq, mockRes)
     expect(mockRes.status).toHaveBeenCalledWith(400)
     expect(mockRes.json).toHaveBeenCalledWith(expect.objectContaining({
@@ -60,14 +40,24 @@ describe('acknowledgeMessage', () => {
       code: 'ERR_MESSAGE_ID_REQUIRED'
     }))
   })
-  it('Throws an error if message ID is not a number', async () => {
-    validReq.body.messageId = '24'
+  it('Throws an error if messageIds is not an Array', async () => {
+    validReq.body.messageIds = '24'
     await acknowledgeMessage.func(validReq, mockRes)
     expect(mockRes.status).toHaveBeenCalledWith(400)
     expect(mockRes.json).toHaveBeenCalledWith(expect.objectContaining({
       status: 'error',
       code: 'ERR_INVALID_MESSAGE_ID',
-      description: 'Message ID must be formatted as a Number!'
+      description: 'Message IDs must be formatted as an Array of Numbers!'
+    }))
+  })
+  it('Throws an error if messageIds is not an Array of Numbers', async () => {
+    validReq.body.messageIds = [12, '24']
+    await acknowledgeMessage.func(validReq, mockRes)
+    expect(mockRes.status).toHaveBeenCalledWith(400)
+    expect(mockRes.json).toHaveBeenCalledWith(expect.objectContaining({
+      status: 'error',
+      code: 'ERR_INVALID_MESSAGE_ID',
+      description: 'Message IDs must be formatted as an Array of Numbers!'
     }))
   })
   it('Deletes an acknowledged message', async () => {
@@ -75,13 +65,12 @@ describe('acknowledgeMessage', () => {
       if (s === 1) {
         expect(q.method).toEqual('del')
         expect(q.sql).toEqual(
-          'delete from `messages` where `recipient` = ? and `messageBoxId` = ? and `messageId` = ? and `acknowledged` = ?'
+          'delete from `messages` where `recipient` = ? and `acknowledged` = ? and `messageId` in (?)'
         )
         expect(q.bindings).toEqual([
           'mockIdKey',
-          42,
-          123,
-          true
+          true,
+          123
         ])
         q.response(true)
       } else {
@@ -100,13 +89,12 @@ describe('acknowledgeMessage', () => {
       if (s === 1) {
         expect(q.method).toEqual('del')
         expect(q.sql).toEqual(
-          'delete from `messages` where `recipient` = ? and `messageBoxId` = ? and `messageId` = ? and `acknowledged` = ?'
+          'delete from `messages` where `recipient` = ? and `acknowledged` = ? and `messageId` in (?)'
         )
         expect(q.bindings).toEqual([
           'mockIdKey',
-          42,
-          123,
-          true
+          true,
+          123
         ])
         q.response(false)
       } else {

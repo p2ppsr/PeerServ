@@ -13,8 +13,7 @@ module.exports = {
   knex,
   summary: 'Use this route to acknowledge a message has been received',
   parameters: {
-    messageBoxId: 42,
-    messageId: 3301
+    messageIds: [3301]
   },
   exampleResponse: {
     status: 'success'
@@ -23,42 +22,26 @@ module.exports = {
   func: async (req, res) => {
     try {
       // Validate request body
-      if (!req.body.messageBoxId) {
-        return res.status(400).json({
-          status: 'error',
-          code: 'ERR_MESSAGEBOX_ID_REQUIRED',
-          description: 'Please provide a message box id to read from!'
-        })
-      }
-      if (typeof req.body.messageBoxId !== 'number') {
-        return res.status(400).json({
-          status: 'error',
-          code: 'ERR_INVALID_MESSAGEBOX_ID',
-          description: 'MessageBox ID must be formatted as a Number!'
-        })
-      }
-      if (!req.body.messageId) {
+      if (!req.body.messageIds) {
         return res.status(400).json({
           status: 'error',
           code: 'ERR_MESSAGE_ID_REQUIRED',
-          description: 'Please provide the ID of the message to read!'
+          description: 'Please provide the ID of the message(s) to acknowledge!'
         })
       }
-      if (typeof req.body.messageId !== 'number') {
+      if (!Array.isArray(req.body.messageIds) || req.body.messageIds.some(x => typeof x !== 'number')) {
         return res.status(400).json({
           status: 'error',
           code: 'ERR_INVALID_MESSAGE_ID',
-          description: 'Message ID must be formatted as a Number!'
+          description: 'Message IDs must be formatted as an Array of Numbers!'
         })
       }
 
       // The server removes the message after it has been acknowledged
       const deleted = await knex('messages').where({
         recipient: req.authrite.identityKey,
-        messageBoxId: req.body.messageBoxId,
-        messageId: req.body.messageId,
         acknowledged: true
-      }).del()
+      }).whereIn('messageId', req.body.messageIds).del()
 
       if (!deleted) {
         // Would this ever happen?
