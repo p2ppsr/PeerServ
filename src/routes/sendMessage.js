@@ -111,7 +111,7 @@ module.exports = {
         messageBoxId: messageBox.messageBoxId, // Foreign key
         sender: req.authrite.identityKey,
         recipient: req.body.message.recipient,
-        body: JSON.stringify(req.body.message.body), // Should a buffer be supported in the future?
+        body: req.body.message.body, // Should a buffer be supported in the future?
         created_at: new Date(),
         updated_at: new Date()
       })

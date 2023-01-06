@@ -13,8 +13,7 @@ module.exports = {
   knex,
   summary: 'Use this route to check for new messages or list all messages from one or more of your message boxes.',
   parameters: {
-    messageBoxes: 'An array of the messageBoxes you would like to get messages from. If none are provided, all messageBoxes will be included.',
-    acknowledged: false
+    messageBoxes: 'An array of the messageBoxes you would like to get messages from. If none are provided, all messageBoxes will be included.'
   },
   exampleResponse: {
     status: 'success',

@@ -22,7 +22,7 @@ module.exports = {
   func: async (req, res) => {
     try {
       // Validate request body
-      if (!req.body.messageIds) {
+      if (!req.body.messageIds || (Array.isArray(req.body.messageIds) && req.body.messageIds.length === 0)) {
         return res.status(400).json({
           status: 'error',
           code: 'ERR_MESSAGE_ID_REQUIRED',
