@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+    <title>PeerServ</title>
+    <style>
+      body {
+        font-family: Arial;
+        padding: 1em;
+      }
+      .main {
+        max-width: min(1440px, 100vw);
+        margin: auto;
+        word-wrap: break-word;
+      }
+      .method {
+        background-color: lime;
+        text-transform: uppercase;
+      }
+    </style>
+  </head>
+  <body>
+    <div class='main'>
+      <h1>PeerServ</h1>
+      <p>
+        Facilitates general secure peer-to-peer message exchanges between parties.
+      </p>
+      <p>Learn more on <a href='https://github.com/p2ppsr/peerserv'>GitHub</a></p>
+      <p>For a UI that can interact with PeerServ, go <a href='https://github.com/p2ppsr/peerserv-tokenator-demo'>here</a>.</p>
+      <h2>Endpoint Documentation</h2>
+      
+        
+         <h3>
+           <b class='method'>post</b> /sendMessage
+         </h3>
+         <p>
+           Use this route to send a message to a recipient&#39;s message box.
+         </p>
+         
+           <h4>Parameters</h4>
+           <ul>
+              
+                
+                  <pre>{
+  &#34;message&#34;: {
+    &#34;recipient&#34;: &#34;028d37b941208cd6b8a4c28288eda5f2f16c2b3ab0fcb6d13c18b47fe37b971fc1&#34;,
+    &#34;messageBox&#34;: &#34;payment_inbox&#34;,
+    &#34;body&#34;: &#34;{}&#34;
+  }
+}</pre>
+                
+              
+           </ul>
+         
+         
+           <h4>Example Response</h4>
+           <pre>{
+  &#34;status&#34;: &#34;success&#34;
+}</pre>
+         
+       
+   
+        
+         <h3>
+           <b class='method'>post</b> /listMessages
+         </h3>
+         <p>
+           Use this route to check for new messages or list all messages from one or more of your message boxes.
+         </p>
+         
+           <h4>Parameters</h4>
+           <ul>
+              
+                
+                  <li><b>messageBoxes</b>: An array of the messageBoxes you would like to get messages from. If none are provided, all messageBoxes will be included.</li>
+                
+              
+           </ul>
+         
+         
+           <h4>Example Response</h4>
+           <pre>{
+  &#34;status&#34;: &#34;success&#34;,
+  &#34;messages&#34;: [
+    {
+      &#34;sender&#34;: &#34;028d37b941208cd6b8a4c28288eda5f2f16c2b3ab0fcb6d13c18b47fe37b971fc1&#34;,
+      &#34;messageBoxId&#34;: &#34;42&#34;,
+      &#34;body&#34;: &#34;{}&#34;
+    }
+  ]
+}</pre>
+         
+       
+   
+        
+         <h3>
+           <b class='method'>post</b> /readMessage
+         </h3>
+         <p>
+           Use this route to read one or more messages
+         </p>
+         
+           <h4>Parameters</h4>
+           <ul>
+              
+                
+                  <pre>{
+  &#34;messageIds&#34;: [
+    123
+  ]
+}</pre>
+                
+              
+           </ul>
+         
+         
+           <h4>Example Response</h4>
+           <pre>{
+  &#34;status&#34;: &#34;success&#34;,
+  &#34;messages&#34;: [
+    {
+      &#34;sender&#34;: &#34;028d37b941208cd6b8a4c28288eda5f2f16c2b3ab0fcb6d13c18b47fe37b971fc1&#34;,
+      &#34;messageBoxId&#34;: 42,
+      &#34;body&#34;: &#34;{}&#34;
+    }
+  ]
+}</pre>
+         
+       
+   
+        
+         <h3>
+           <b class='method'>post</b> /acknowledgeMessage
+         </h3>
+         <p>
+           Use this route to acknowledge a message has been received
+         </p>
+         
+           <h4>Parameters</h4>
+           <ul>
+              
+                
+                  <pre>{
+  &#34;messageIds&#34;: [
+    3301
+  ]
+}</pre>
+                
+              
+           </ul>
+         
+         
+           <h4>Example Response</h4>
+           <pre>{
+  &#34;status&#34;: &#34;success&#34;
+}</pre>
+         
+       
+   
+      <p>Built with love in 2023 by the Babbage Team</p>
+    </div>
+  </body>
+</html>
