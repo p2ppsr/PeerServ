@@ -5,7 +5,6 @@ module.exports = {
   postAuthrite: [
     require('./sendMessage'),
     require('./listMessages'),
-    require('./readMessage'),
     require('./acknowledgeMessage')
   ]
 }

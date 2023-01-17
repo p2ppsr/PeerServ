@@ -69,14 +69,18 @@
            <b class='method'>post</b> /listMessages
          </h3>
          <p>
-           Use this route to check for new messages or list all messages from one or more of your message boxes.
+           Use this route to list messages from one or more of your message boxes. Only one filter type should be specified (messageBox or messageId). If no filter type is provided, all messages belonging to the user will be returned.
          </p>
          
            <h4>Parameters</h4>
            <ul>
               
                 
-                  <li><b>messageBoxes</b>: An array of the messageBoxes you would like to get messages from. If none are provided, all messageBoxes will be included.</li>
+                  <li><b>messageBoxes</b>: (optional) An array of the messageBoxes you would like to get messages from. If none are provided, all messageBoxes will be included.</li>
+                
+              
+                
+                  <li><b>messageIds</b>: (optional) An array of specific messages to list</li>
                 
               
            </ul>
@@ -89,42 +93,6 @@
     {
       &#34;sender&#34;: &#34;028d37b941208cd6b8a4c28288eda5f2f16c2b3ab0fcb6d13c18b47fe37b971fc1&#34;,
       &#34;messageBoxId&#34;: &#34;42&#34;,
-      &#34;body&#34;: &#34;{}&#34;
-    }
-  ]
-}</pre>
-         
-       
-   
-        
-         <h3>
-           <b class='method'>post</b> /readMessage
-         </h3>
-         <p>
-           Use this route to read one or more messages
-         </p>
-         
-           <h4>Parameters</h4>
-           <ul>
-              
-                
-                  <pre>{
-  &#34;messageIds&#34;: [
-    123
-  ]
-}</pre>
-                
-              
-           </ul>
-         
-         
-           <h4>Example Response</h4>
-           <pre>{
-  &#34;status&#34;: &#34;success&#34;,
-  &#34;messages&#34;: [
-    {
-      &#34;sender&#34;: &#34;028d37b941208cd6b8a4c28288eda5f2f16c2b3ab0fcb6d13c18b47fe37b971fc1&#34;,
-      &#34;messageBoxId&#34;: 42,
       &#34;body&#34;: &#34;{}&#34;
     }
   ]
