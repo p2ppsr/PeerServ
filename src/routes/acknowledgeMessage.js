@@ -39,8 +39,7 @@ module.exports = {
 
       // The server removes the message after it has been acknowledged
       const deleted = await knex('messages').where({
-        recipient: req.authrite.identityKey,
-        acknowledged: true
+        recipient: req.authrite.identityKey
       }).whereIn('messageId', req.body.messageIds).del()
 
       if (!deleted) {

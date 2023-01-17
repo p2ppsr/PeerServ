@@ -41,11 +41,10 @@ module.exports = {
       }
       // Get all my available unread messages
       let messages = await knex('messages').where({
-        recipient: req.authrite.identityKey,
-        acknowledged: false
+        recipient: req.authrite.identityKey
       }).select('messageId', 'messageBoxId', 'body', 'sender', 'created_at', 'updated_at')
 
-      // Return all unacknowledged messages if no specific messageBoxes are provided
+      // Return all messages if no specific messageBoxes are provided
       if (!req.body.messageBoxes || req.body.messageBoxes.length === 0) {
         return res.status(200).json({
           status: 'success',

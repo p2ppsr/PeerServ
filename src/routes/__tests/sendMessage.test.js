@@ -32,7 +32,7 @@ describe('sendMessage', () => {
         message: {
           recipient: '028d37b941208cd6b8a4c28288eda5f2f16c2b3ab0fcb6d13c18b47fe37b971fc1',
           messageBox: 'payment_inbox',
-          body: '{}'
+          body: JSON.stringify({})
         }
       }
     }
@@ -175,7 +175,7 @@ describe('sendMessage', () => {
           'insert into `messages` (`body`, `created_at`, `messageBoxId`, `recipient`, `sender`, `updated_at`) values (?, ?, ?, ?, ?, ?)'
         )
         expect(q.bindings).toEqual([
-          JSON.stringify(validReq.body.message.body),
+          '{}',
           expect.any(Date),
           42,
           validReq.body.message.recipient,

@@ -44,8 +44,7 @@ describe('listMessages', () => {
         identityKey: 'mockIdKey'
       },
       body: {
-        messageBoxes: ['payment_inbox'],
-        acknowledged: false
+        messageBoxes: ['payment_inbox']
       }
     }
   })
@@ -86,11 +85,10 @@ describe('listMessages', () => {
       if (s === 1) {
         expect(q.method).toEqual('select')
         expect(q.sql).toEqual(
-          'select `messageId`, `messageBoxId`, `body`, `sender`, `created_at`, `updated_at` from `messages` where `recipient` = ? and `acknowledged` = ?'
+          'select `messageId`, `messageBoxId`, `body`, `sender`, `created_at`, `updated_at` from `messages` where `recipient` = ?'
         )
         expect(q.bindings).toEqual([
-          'mockIdKey',
-          false
+          'mockIdKey'
         ])
         q.response(validMessages)
       } else if (s === 2) {

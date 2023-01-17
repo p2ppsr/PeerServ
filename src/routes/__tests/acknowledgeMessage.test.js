@@ -60,16 +60,15 @@ describe('acknowledgeMessage', () => {
       description: 'Message IDs must be formatted as an Array of Numbers!'
     }))
   })
-  it('Deletes an acknowledged message', async () => {
+  it('Deletes a message', async () => {
     queryTracker.on('query', (q, s) => {
       if (s === 1) {
         expect(q.method).toEqual('del')
         expect(q.sql).toEqual(
-          'delete from `messages` where `recipient` = ? and `acknowledged` = ? and `messageId` in (?)'
+          'delete from `messages` where `recipient` = ? and `messageId` in (?)'
         )
         expect(q.bindings).toEqual([
           'mockIdKey',
-          true,
           123
         ])
         q.response(true)
@@ -89,11 +88,10 @@ describe('acknowledgeMessage', () => {
       if (s === 1) {
         expect(q.method).toEqual('del')
         expect(q.sql).toEqual(
-          'delete from `messages` where `recipient` = ? and `acknowledged` = ? and `messageId` in (?)'
+          'delete from `messages` where `recipient` = ? and `messageId` in (?)'
         )
         expect(q.bindings).toEqual([
           'mockIdKey',
-          true,
           123
         ])
         q.response(false)

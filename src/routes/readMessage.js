@@ -1,4 +1,4 @@
-
+// TODO: Move functionality into listMessage to support listing specific messages
 const {
   NODE_ENV
 } = process.env
@@ -11,7 +11,7 @@ module.exports = {
   type: 'post',
   path: '/readMessage',
   knex,
-  summary: 'Use this route to read one or more messages',
+  summary: 'Use this route to read one or more messages by ID',
   parameters: {
     messageIds: [123]
   },
@@ -43,8 +43,7 @@ module.exports = {
 
       // Get requested message(s)
       const messages = await knex('messages').where({
-        recipient: req.authrite.identityKey,
-        acknowledged: false
+        recipient: req.authrite.identityKey
       }).whereIn('messageId', req.body.messageIds)
         .select('messageId', 'messageBoxId', 'body', 'sender', 'created_at', 'updated_at')
         // Test with just one mismatch...?
@@ -55,15 +54,8 @@ module.exports = {
           description: 'One or more messages could not be found!'
         })
       }
-      // Mark message(s) as acknowledged, and ready for deletion
-      await knex('messages').where({
-        recipient: req.authrite.identityKey,
-        acknowledged: false
-      }).whereIn('messageId', req.body.messageIds)
-        .update({ acknowledged: true, updated_at: new Date() })
 
       // Return all matching messages
-      // Note: It is up to the client to send acknowledgement(s) to the server
       return res.status(200).json({
         status: 'success',
         messages

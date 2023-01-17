@@ -90,11 +90,10 @@ describe('readMessage', () => {
       if (s === 1) {
         expect(q.method).toEqual('select')
         expect(q.sql).toEqual(
-          'select `messageId`, `messageBoxId`, `body`, `sender`, `created_at`, `updated_at` from `messages` where `recipient` = ? and `acknowledged` = ? and `messageId` in (?)'
+          'select `messageId`, `messageBoxId`, `body`, `sender`, `created_at`, `updated_at` from `messages` where `recipient` = ? and `messageId` in (?)'
         )
         expect(q.bindings).toEqual([
           'mockIdKey',
-          false,
           123
         ])
         q.response([validMessages[0]])
