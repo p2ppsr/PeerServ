@@ -47,7 +47,7 @@ module.exports = {
         return res.status(400).json({
           status: 'error',
           code: 'ERR_INVALID_ACKNOWLEDGMENT',
-          description: 'Message has already been acknowledged!'
+          description: 'Message not found!'
         })
       }
       return res.status(200).json({
