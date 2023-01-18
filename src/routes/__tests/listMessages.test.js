@@ -53,62 +53,6 @@ describe('listMessages', () => {
     queryTracker.uninstall()
     mockKnex.unmock(listMessages.knex)
   })
-  it('Throws an error if messageId is not an Array', async () => {
-    validReq.body.messageIds = '42'
-    validReq.body.messageBoxes = undefined
-    await listMessages.func(validReq, mockRes)
-    expect(mockRes.status).toHaveBeenCalledWith(400)
-    expect(mockRes.json).toHaveBeenCalledWith(expect.objectContaining({
-      status: 'error',
-      code: 'ERR_INVALID_MESSAGE_ID',
-      description: 'Message IDs must be formatted as an Array of Numbers!'
-    }))
-  })
-  it('Throws an error if messageId is not an Array of Numbers', async () => {
-    validReq.body.messageIds = [42, '32']
-    validReq.body.messageBoxes = undefined
-    await listMessages.func(validReq, mockRes)
-    expect(mockRes.status).toHaveBeenCalledWith(400)
-    expect(mockRes.json).toHaveBeenCalledWith(expect.objectContaining({
-      status: 'error',
-      code: 'ERR_INVALID_MESSAGE_ID',
-      description: 'Message IDs must be formatted as an Array of Numbers!'
-    }))
-  })
-  it('Queries for messages with matching messageIds', async () => {
-    validReq.body.messageIds = [123]
-    validReq.body.messageBoxes = undefined
-    queryTracker.on('query', (q, s) => {
-      if (s === 1) {
-        expect(q.method).toEqual('select')
-        expect(q.sql).toEqual(
-          'select `messageId`, `messageBoxId`, `body`, `sender`, `created_at`, `updated_at` from `messages` where `recipient` = ? and `messageId` in (?)'
-        )
-        expect(q.bindings).toEqual([
-          'mockIdKey',
-          123
-        ])
-        q.response([validMessages[0]])
-      } else if (s === 2) {
-        q.response(true)
-      } else {
-        q.response([])
-      }
-    })
-    await listMessages.func(validReq, mockRes)
-    expect(mockRes.status).toHaveBeenCalledWith(200)
-    expect(mockRes.json).toHaveBeenCalledWith(expect.objectContaining(validRes))
-  })
-  it('Throws an error if both message filters are present', async () => {
-    validReq.body.messageIds = '42'
-    await listMessages.func(validReq, mockRes)
-    expect(mockRes.status).toHaveBeenCalledWith(400)
-    expect(mockRes.json).toHaveBeenCalledWith(expect.objectContaining({
-      status: 'error',
-      code: 'ERR_INVALID_REQUEST',
-      description: 'You must choose to filter by messageBoxes or messageIds, not both!'
-    }))
-  })
   it('Throws an error if messageBoxes is not an array', async () => {
     validReq.body.messageBoxes = 'payment_inbox'
     queryTracker.on('query', (q, s) => {

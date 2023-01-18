@@ -105,7 +105,7 @@ describe('acknowledgeMessage', () => {
     expect(mockRes.json).toHaveBeenCalledWith(expect.objectContaining({
       status: 'error',
       code: 'ERR_INVALID_ACKNOWLEDGMENT',
-      description: 'Message has already been acknowledged!'
+      description: 'Message not found!'
     }))
   })
   it('Throws unknown errors', async () => {

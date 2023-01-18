@@ -69,18 +69,14 @@
            <b class='method'>post</b> /listMessages
          </h3>
          <p>
-           Use this route to list messages from one or more of your message boxes. Only one filter type should be specified (messageBox or messageId). If no filter type is provided, all messages belonging to the user will be returned.
+           Use this route to list messages from one or more of your message boxes.
          </p>
          
            <h4>Parameters</h4>
            <ul>
               
                 
-                  <li><b>messageBoxes</b>: (optional) An array of the messageBoxes you would like to get messages from. If none are provided, all messageBoxes will be included.</li>
-                
-              
-                
-                  <li><b>messageIds</b>: (optional) An array of specific messages to list</li>
+                  <li><b>messageBoxes</b>: (optional) An array of the messageBoxes you would like to get messages from. If none are provided, all messageBoxes owned by the user will be included.</li>
                 
               
            </ul>
