@@ -29,12 +29,10 @@ describe('listMessages', () => {
     }
     validMessageBoxes = [
       {
-        messageBoxId: 42,
-        messageBox: 'payment_inbox'
+        messageBoxId: 42
       },
       {
-        messageBoxId: 31,
-        messageBox: 'metanet_icu_inbox'
+        messageBoxId: 31
       }
     ]
 
@@ -44,7 +42,7 @@ describe('listMessages', () => {
         identityKey: 'mockIdKey'
       },
       body: {
-        messageBoxes: ['payment_inbox']
+        messageBox: 'payment_inbox'
       }
     }
   })
@@ -53,8 +51,21 @@ describe('listMessages', () => {
     queryTracker.uninstall()
     mockKnex.unmock(listMessages.knex)
   })
-  it('Throws an error if messageBoxes is not an array', async () => {
-    validReq.body.messageBoxes = 'payment_inbox'
+  it('Throws an error if a messageBox is not provided', async () => {
+    validReq.body.messageBox = undefined
+    queryTracker.on('query', (q, s) => {
+      q.response([])
+    })
+    await listMessages.func(validReq, mockRes)
+    expect(mockRes.status).toHaveBeenCalledWith(400)
+    expect(mockRes.json).toHaveBeenCalledWith(expect.objectContaining({
+      status: 'error',
+      code: 'ERR_MESSAGEBOX_REQUIRED',
+      description: 'Please provide the name of a valid MessageBox!'
+    }))
+  })
+  it('Throws an error if messageBox is not a string', async () => {
+    validReq.body.messageBox = 123
     queryTracker.on('query', (q, s) => {
       q.response([])
     })
@@ -63,48 +74,64 @@ describe('listMessages', () => {
     expect(mockRes.json).toHaveBeenCalledWith(expect.objectContaining({
       status: 'error',
       code: 'ERR_INVALID_MESSAGEBOX',
-      description: 'MessageBoxes must be an array of strings!'
+      description: 'MessageBox name must a string!'
     }))
   })
-  it('Throws an error if any element in messageBoxes is not a string', async () => {
-    validReq.body.messageBoxes = ['payment_inbox', 'valid Inbox', 24]
-    queryTracker.on('query', (q, s) => {
-      q.response([])
-    })
-    await listMessages.func(validReq, mockRes)
-    expect(mockRes.status).toHaveBeenCalledWith(400)
-    expect(mockRes.json).toHaveBeenCalledWith(expect.objectContaining({
-      status: 'error',
-      code: 'ERR_INVALID_MESSAGEBOX',
-      description: 'MessageBoxes must be an array of strings!'
-    }))
-  })
-  it('Selects all messages if no messageBoxes are provided', async () => {
-    validReq.body.messageBoxes = []
+  it('Throws an error if no matching messageBox is found', async () => {
+    validReq.body.messageBox = 'pay_inbox'
     queryTracker.on('query', (q, s) => {
       if (s === 1) {
         expect(q.method).toEqual('select')
         expect(q.sql).toEqual(
-          'select `messageId`, `messageBoxId`, `body`, `sender`, `created_at`, `updated_at` from `messages` where `recipient` = ?'
+          'select `messageBoxId` from `messageBox` where `identityKey` = ? and `type` = ?'
         )
-        expect(q.bindings).toEqual([
-          'mockIdKey'
-        ])
-        q.response(validMessages)
-      } else if (s === 2) {
-        q.response(validMessageBoxes)
+        q.response(undefined)
       } else {
         q.response([])
       }
     })
-
+    await listMessages.func(validReq, mockRes)
+    expect(mockRes.status).toHaveBeenCalledWith(400)
+    expect(mockRes.json).toHaveBeenCalledWith(expect.objectContaining({
+      status: 'error',
+      code: 'ERR_INVALID_MESSAGEBOX',
+      description: 'MessageBox not found!'
+    }))
+  })
+  it('Returns ID of messageBox', async () => {
+    queryTracker.on('query', (q, s) => {
+      if (s === 1) {
+        expect(q.method).toEqual('select')
+        expect(q.sql).toEqual(
+          'select `messageBoxId` from `messageBox` where `identityKey` = ? and `type` = ?'
+        )
+        expect(q.bindings).toEqual([
+          'mockIdKey',
+          'payment_inbox'
+        ])
+        q.response(validMessageBoxes[0])
+      } else if (s === 2) {
+        q.response(validMessages)
+      } else {
+        q.response([])
+      }
+    })
     await listMessages.func(validReq, mockRes)
     expect(mockRes.status).toHaveBeenCalledWith(200)
-    expect(mockRes.json).toHaveBeenCalledWith(expect.objectContaining(validRes))
+    expect(mockRes.json).toHaveBeenCalledWith(expect.objectContaining({
+      status: 'success',
+      messages: validMessages
+    }))
   })
   it('Returns empty array if no messages found', async () => {
     queryTracker.on('query', (q, s) => {
       if (s === 1) {
+        q.response({ messageBoxId: 123 })
+      } else if (s === 2) {
+        expect(q.method).toEqual('select')
+        expect(q.sql).toEqual(
+          'select `messageId`, `body`, `sender`, `created_at`, `updated_at` from `messages` where `recipient` = ? and `messageBoxId` = ?'
+        )
         q.response([])
       } else {
         q.response([])
@@ -117,20 +144,16 @@ describe('listMessages', () => {
       messages: []
     }))
   })
-  it('Queries for messageBoxes if provided', async () => {
+  it('Returns list of messages found', async () => {
     queryTracker.on('query', (q, s) => {
       if (s === 1) {
-        q.response(validMessages)
+        q.response({ messageBoxId: 123 })
       } else if (s === 2) {
         expect(q.method).toEqual('select')
         expect(q.sql).toEqual(
-          'select `messageBoxId` from `messageBox` where `identityKey` = ? and `type` in (?)'
+          'select `messageId`, `body`, `sender`, `created_at`, `updated_at` from `messages` where `recipient` = ? and `messageBoxId` = ?'
         )
-        expect(q.bindings).toEqual([
-          'mockIdKey',
-          'payment_inbox'
-        ])
-        q.response(validMessageBoxes)
+        q.response(validMessages)
       } else {
         q.response([])
       }

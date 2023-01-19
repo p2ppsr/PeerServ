@@ -11,62 +11,58 @@ module.exports = {
   type: 'post',
   path: '/listMessages',
   knex,
-  summary: 'Use this route to list messages from one or more of your message boxes.',
+  summary: 'Use this route to list messages from your messageBox.',
   parameters: {
-    messageBoxes: '(optional) An array of the messageBoxes you would like to get messages from. If none are provided, all messageBoxes owned by the user will be included.'
+    messageBox: 'The name of the messageBox you would like to list messages from.'
   },
   exampleResponse: {
     status: 'success',
     messages: [{
-      sender: '028d37b941208cd6b8a4c28288eda5f2f16c2b3ab0fcb6d13c18b47fe37b971fc1',
-      messageBoxId: '42',
-      body: '{}'
+      messageId: 3301,
+      body: '{}',
+      sender: '028d37b941208cd6b8a4c28288eda5f2f16c2b3ab0fcb6d13c18b47fe37b971fc1'
     }]
   },
-  errors: [
-    'ERR_MESSAGEBOX_NOT_FOUND'
-  ],
   func: async (req, res) => {
     try {
-      if (req.body.messageBoxes) {
-        // MessageBoxes must be an array of strings
-        if (!Array.isArray(req.body.messageBoxes) || req.body.messageBoxes.some(x => typeof x !== 'string')) {
-          return res.status(400).json({
-            status: 'error',
-            code: 'ERR_INVALID_MESSAGEBOX',
-            description: 'MessageBoxes must be an array of strings!'
-          })
-        }
+      // Validate a messageBox is provided and is a string
+      if (!req.body.messageBox) {
+        return res.status(400).json({
+          status: 'error',
+          code: 'ERR_MESSAGEBOX_REQUIRED',
+          description: 'Please provide the name of a valid MessageBox!'
+        })
       }
-
-      // Get all my available unread messages
-      let messages = await knex('messages').where({
-        recipient: req.authrite.identityKey
-      }).select('messageId', 'messageBoxId', 'body', 'sender', 'created_at', 'updated_at')
-
-      // Return all messages if no specific messageBoxes are provided
-      if (!req.body.messageBoxes || req.body.messageBoxes.length === 0) {
-        return res.status(200).json({
-          status: 'success',
-          messages
+      if (typeof req.body.messageBox !== 'string') {
+        return res.status(400).json({
+          status: 'error',
+          code: 'ERR_INVALID_MESSAGEBOX',
+          description: 'MessageBox name must a string!'
         })
       }
 
-      let messageBoxes = []
-      // Get message box ids that belong to me and are in my list of types.
-      messageBoxes = await knex('messageBox').where({
-        identityKey: req.authrite.identityKey
-      }).whereIn('type', req.body.messageBoxes).select('messageBoxId')
+      // Get the ID of the messageBox
+      const [messageBox] = await knex('messageBox').where({
+        identityKey: req.authrite.identityKey,
+        type: req.body.messageBox
+      }).select('messageBoxId')
 
-      // Only return messages from the requested messageBoxes
-      messages = messages.filter(m => {
-        let includeMessage = false
-        if (req.body.messageBoxes && req.body.messageBoxes.length !== 0) {
-          includeMessage = messageBoxes.some(x => x.messageBoxId === m.messageBoxId)
-        }
-        return includeMessage
-      })
+      // Validate a match was found
+      if (!messageBox) {
+        return res.status(400).json({
+          status: 'error',
+          code: 'ERR_INVALID_MESSAGEBOX',
+          description: 'MessageBox not found!'
+        })
+      }
 
+      // Get all messages from the specified messageBox
+      const messages = await knex('messages').where({
+        recipient: req.authrite.identityKey,
+        messageBoxId: messageBox.messageBoxId
+      }).select('messageId', 'body', 'sender', 'created_at', 'updated_at')
+
+      // Return a list of matching messages
       return res.status(200).json({
         status: 'success',
         messages
