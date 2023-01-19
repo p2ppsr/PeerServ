@@ -69,14 +69,14 @@
            <b class='method'>post</b> /listMessages
          </h3>
          <p>
-           Use this route to list messages from one or more of your message boxes.
+           Use this route to list messages from your messageBox.
          </p>
          
            <h4>Parameters</h4>
            <ul>
               
                 
-                  <li><b>messageBoxes</b>: (optional) An array of the messageBoxes you would like to get messages from. If none are provided, all messageBoxes owned by the user will be included.</li>
+                  <li><b>messageBox</b>: The name of the messageBox you would like to list messages from.</li>
                 
               
            </ul>
@@ -87,9 +87,9 @@
   &#34;status&#34;: &#34;success&#34;,
   &#34;messages&#34;: [
     {
-      &#34;sender&#34;: &#34;028d37b941208cd6b8a4c28288eda5f2f16c2b3ab0fcb6d13c18b47fe37b971fc1&#34;,
-      &#34;messageBoxId&#34;: &#34;42&#34;,
-      &#34;body&#34;: &#34;{}&#34;
+      &#34;messageId&#34;: 3301,
+      &#34;body&#34;: &#34;{}&#34;,
+      &#34;sender&#34;: &#34;028d37b941208cd6b8a4c28288eda5f2f16c2b3ab0fcb6d13c18b47fe37b971fc1&#34;
     }
   ]
 }</pre>
