@@ -6,9 +6,6 @@ jest.mock('knex', () => () => ({
     latest: jest.fn()
   }
 }))
-jest.mock('../../utils/constants', () => ({
-  MIGRATE_KEY: 'VALID_MIGRATE_KEY'
-}))
 
 const res = {
   status: jest.fn()
@@ -25,7 +22,7 @@ describe('migrate', () => {
     jest.clearAllMocks()
   })
   it('Runs migrations when key is valid', async () => {
-    await migrate.func({ body: { migratekey: 'VALID_MIGRATE_KEY' } }, res)
+    await migrate.func({ body: { migratekey: process.env.MIGRATE_KEY } }, res)
     expect(migrate.knex.migrate.latest).toHaveBeenCalled()
     expect(res.status).toHaveBeenLastCalledWith(200)
     expect(json).toHaveBeenLastCalledWith({

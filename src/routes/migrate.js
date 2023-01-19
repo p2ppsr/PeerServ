@@ -3,9 +3,7 @@ const knex =
     ? require('knex')(require('../../knexfile.js').production)
     : require('knex')(require('../../knexfile.js').development)
 
-const {
-  MIGRATE_KEY
-} = require('../utils/constants')
+const MIGRATE_KEY = process.env.MIGRATE_KEY
 
 module.exports = {
   type: 'post',

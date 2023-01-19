@@ -85,7 +85,7 @@ describe('listMessages', () => {
         expect(q.sql).toEqual(
           'select `messageBoxId` from `messageBox` where `identityKey` = ? and `type` = ?'
         )
-        q.response(undefined)
+        q.response([undefined])
       } else {
         q.response([])
       }
@@ -109,7 +109,7 @@ describe('listMessages', () => {
           'mockIdKey',
           'payment_inbox'
         ])
-        q.response(validMessageBoxes[0])
+        q.response([validMessageBoxes[0]])
       } else if (s === 2) {
         q.response(validMessages)
       } else {
@@ -126,7 +126,7 @@ describe('listMessages', () => {
   it('Returns empty array if no messages found', async () => {
     queryTracker.on('query', (q, s) => {
       if (s === 1) {
-        q.response({ messageBoxId: 123 })
+        q.response([{ messageBoxId: 123 }])
       } else if (s === 2) {
         expect(q.method).toEqual('select')
         expect(q.sql).toEqual(
@@ -147,7 +147,7 @@ describe('listMessages', () => {
   it('Returns list of messages found', async () => {
     queryTracker.on('query', (q, s) => {
       if (s === 1) {
-        q.response({ messageBoxId: 123 })
+        q.response([{ messageBoxId: 123 }])
       } else if (s === 2) {
         expect(q.method).toEqual('select')
         expect(q.sql).toEqual(
