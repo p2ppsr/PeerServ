@@ -93,9 +93,8 @@ describe('listMessages', () => {
     await listMessages.func(validReq, mockRes)
     expect(mockRes.status).toHaveBeenCalledWith(400)
     expect(mockRes.json).toHaveBeenCalledWith(expect.objectContaining({
-      status: 'error',
-      code: 'ERR_INVALID_MESSAGEBOX',
-      description: 'MessageBox not found!'
+      status: 'success',
+      messages: []
     }))
   })
   it('Returns ID of messageBox', async () => {

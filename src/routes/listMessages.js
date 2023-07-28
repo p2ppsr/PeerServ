@@ -3,9 +3,9 @@ const {
   NODE_ENV
 } = process.env
 const knex =
-      NODE_ENV === 'production' || NODE_ENV === 'staging'
-        ? require('knex')(require('../../knexfile.js').production)
-        : require('knex')(require('../../knexfile.js').development)
+  NODE_ENV === 'production' || NODE_ENV === 'staging'
+    ? require('knex')(require('../../knexfile.js').production)
+    : require('knex')(require('../../knexfile.js').development)
 
 module.exports = {
   type: 'post',
@@ -49,10 +49,9 @@ module.exports = {
 
       // Validate a match was found
       if (!messageBox) {
-        return res.status(400).json({
-          status: 'error',
-          code: 'ERR_INVALID_MESSAGEBOX',
-          description: 'MessageBox not found!'
+        return res.status(200).json({
+          status: 'success',
+          messages: []
         })
       }
 
