@@ -8,9 +8,9 @@
   "author": "Peer-to-peer Privacy Systems Research, LLC",
   "license": "Open BSV License",
   "dependencies": {
-    "authrite-express": "^0.3.4",
+    "authrite-express": "^0.3.15",
+    "babbage-bsv": "^0.2.4",
     "body-parser": "^1.19.0",
-    "babbage-bsv": "^0.1.1",
     "dotenv": "^8.2.0",
     "express": "^5.0.0-beta.1",
     "knex": "^2.0.0",
