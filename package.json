@@ -15,8 +15,7 @@
     "express": "^5.0.0-beta.1",
     "knex": "^2.0.0",
     "mysql": "^2.18.1",
-    "prettyjson": "^1.2.1",
-    "utxoninja": "^0.2.47"
+    "prettyjson": "^1.2.1"
   },
   "scripts": {
     "start": "node src/index.js",
