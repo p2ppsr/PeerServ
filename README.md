@@ -1,6 +1,59 @@
 # PeerServ
 Facilitates general secure peer-to-peer message exchanges between parties.
 
+## Overview
+
+PeerServ is a peer-to-peer messaging API that enables secure and authenticated communication between users on the MetaNet. This is primarily achieved through the use of a message-box architecture.
+
+When a user sends a message, they must specify the messageBox type and the recipient. This design allows for standard messageBox protocols to be defined at a higher layer while creating a separation of messages based on their type and recipient. Once a user sends a message, it is placed in a messageBox specifically designated for that user and that protocol.
+
+Security is a critical aspect of PeerServ. It relies on [Authrite middleware](https://github.com/p2ppsr/authrite-express) to ensure that only the user who created the messageBox can access its contents. Additionally, PeerServ is compatible with [PacketPay](https://github.com/p2ppsr/packetpay-express), which wraps the Authrite middleware and provides a way for PeerServ instance owners to monetize their services through API requests.
+
+To make full use of PeerServ, you can use [Tokenator](https://github.com/p2ppsr/tokenator) which is the base-level client-side software for interacting with PeerServ.
+
+## API Routes
+
+### POST `/sendMessage`
+
+Sends a message to a specific recipient's message box.
+
+Note: All parameters given in an object.
+- **Parameters:**
+  - **recipient**: The recipient's public key
+  - **messageBox**: The name of the recipient's message box
+  - **body**: The content of the message
+- **Example Response:** `{ "status": "success" }`
+
+### POST `/listMessages`
+
+List all messages in a specific message box.
+
+**Parameters:**
+- **messageBox**: The name of the message box to list messages from
+- **Example Response**: 
+```json
+{ 
+  "status": "success", 
+  "messages": [ {
+    "messageId": 3301, 
+    "body": '{
+      "subject":"This is a test!",
+      "messageBody":"Do you see the L?",
+      "anyRandomData":"Yes, it works!"
+    }',
+    "sender": "028d37b941208cd6b8a4c28288eda5f2f16c2b3ab0fcb6d13c18b47fe37b971fc1" 
+  } ]
+}
+```
+
+### POST `/acknowledgeMessage`
+
+Acknowledges that a message has been received, processed, and can now be deleted from the server.
+
+**Parameters:**
+- **messageIds**: Array of message IDs to acknowledge
+- **Example Response**: `{ "status": "success" }`
+
 ## Environmental Variables
 
 You can pass `ENV=prod`, `ENV=staging` or `ENV=dev` depending the enviornment.
@@ -31,7 +84,7 @@ Run `docker compose up`
   - Database: `peerserv`
 - A web SQL database viewer (PHPMyAdmin) is on port **3003**
 
-To interact with this API, spin up a copy of the [PeerServ-Tokenator Demo UI](https://github.com/p2ppsr/peerserv-tokenator-demo) in parallel with this system.
+To interact with this API, spin up a copy of the [PeerPay Simple UI](https://github.com/p2ppsr/peerpay-simple-ui) demo in parallel with this system.
 
 ## Deploying
 
