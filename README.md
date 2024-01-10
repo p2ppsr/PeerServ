@@ -11,6 +11,8 @@ Security is a critical aspect of PeerServ. It relies on [Authrite middleware](ht
 
 To make full use of PeerServ, you can use [Tokenator](https://github.com/p2ppsr/tokenator) which is the base-level client-side software for interacting with PeerServ.
 
+For more information on the concepts behind PeerServ, check out the documentation on [Project Babbage](https://www.projectbabbage.com/docs/peerserv/concepts).
+
 ## API Routes
 
 ### POST `/sendMessage`
