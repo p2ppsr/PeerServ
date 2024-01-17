@@ -4,6 +4,9 @@ const bodyparser = require('body-parser')
 const prettyjson = require('prettyjson')
 const { preAuthrite, postAuthrite } = require('./routes')
 const authrite = require('authrite-express')
+
+const spawn = require('child_process').spawn
+
 const {
   NODE_ENV,
   PORT,
@@ -13,7 +16,7 @@ const {
 const HTTP_PORT = PORT || process.env.HTTP_PORT || 8080
 const ROUTING_PREFIX = process.env.ROUTING_PREFIX || ''
 const app = express()
-app.use(bodyparser.json())
+app.use(bodyparser.json({ limit: '1gb', type: 'application/json' }))
 
 // This ensures that HTTPS is used unless you are in development mode
 app.use((req, res, next) => {
@@ -92,4 +95,7 @@ app.use((req, res) => {
 // This starts the API server listening for requests
 app.listen(HTTP_PORT, () => {
   console.log('PeerServ listening on port', HTTP_PORT)
+  if (NODE_ENV !== 'development') {
+    spawn('nginx', [], { stdio: [process.stdin, process.stdout, process.stderr] })
+  }
 })

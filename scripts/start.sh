@@ -13,4 +13,4 @@ do
   sleep 1
 done
 knex migrate:latest
-npm run dev
+npm run start
