@@ -13,7 +13,9 @@ const {
   SERVER_PRIVATE_KEY,
   HOSTING_DOMAIN
 } = process.env
-const HTTP_PORT = PORT || process.env.HTTP_PORT || 8080
+const HTTP_PORT = NODE_ENV !== 'development'
+  ? 3000
+  : PORT || process.env.HTTP_PORT || 8080
 const ROUTING_PREFIX = process.env.ROUTING_PREFIX || ''
 const app = express()
 app.use(bodyparser.json({ limit: '1gb', type: 'application/json' }))
