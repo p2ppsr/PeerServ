@@ -74,7 +74,7 @@ io.on('connection', function (socket) {
 
   // Sending a message to a room
   socket.on('sendMessage', ({ roomId, message }) => {
-    io.to(roomId).emit('new message', message)
+    io.to(roomId).emit('sendMessage', message)
   })
 
   socket.on('disconnect', (reason) => {
