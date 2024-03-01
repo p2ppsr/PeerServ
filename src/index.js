@@ -139,7 +139,7 @@ app.use((req, res) => {
 })
 
 // This starts the API server listening for requests
-app.listen(HTTP_PORT, () => {
+http.listen(HTTP_PORT, () => {
   console.log('PeerServ listening on port', HTTP_PORT)
   if (NODE_ENV !== 'development') {
     spawn('nginx', [], { stdio: [process.stdin, process.stdout, process.stderr] })
