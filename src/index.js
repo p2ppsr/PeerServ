@@ -16,8 +16,18 @@ const {
 const HTTP_PORT = NODE_ENV !== 'development'
   ? 3000
   : PORT || process.env.HTTP_PORT || 8080
+
 const ROUTING_PREFIX = process.env.ROUTING_PREFIX || ''
 const app = express()
+const http = require('http').Server(app)
+
+const io = authrite.socket(http, {
+  cors: {
+    origin: '*'
+  },
+  serverPrivateKey: SERVER_PRIVATE_KEY
+})
+
 app.use(bodyparser.json({ limit: '1gb', type: 'application/json' }))
 
 // This ensures that HTTPS is used unless you are in development mode
@@ -44,6 +54,40 @@ app.use((req, res, next) => {
   } else {
     next()
   }
+})
+
+// Configure socket connections
+io.on('connection', function (socket) {
+  console.log('A user connected')
+
+  // Joining a room
+  socket.on('joinRoom', (roomId) => {
+    socket.join(roomId)
+    console.log(`User joined room ${roomId}`);
+  })
+
+  // Leaving a room
+  socket.on('leaveRoom', (roomId) => {
+    socket.leave(roomId)
+    console.log(`User left room ${roomId}`);
+  })
+
+  // Sending a message to a room
+  socket.on('sendMessage', ({ roomId, message }) => {
+    io.to(roomId).emit('new message', message)
+  })
+
+  socket.on('disconnect', (reason) => {
+    console.log(`Disconnected: ${reason}`)
+  })
+
+  socket.on('reconnect', (attemptNumber) => {
+    console.log(`Reconnected after ${attemptNumber} attempts`)
+  })
+
+  socket.on('reconnect_error', (error) => {
+    console.log('Reconnection failed:', error)
+  })
 })
 
 // logger
