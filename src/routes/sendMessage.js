@@ -115,7 +115,7 @@ module.exports = {
       // Insert the new message
       // Note: Additional encryption could be enforced here
       await knex('messages').insert({
-        messageId: req.body.messageId,
+        messageId: req.body.message.messageId,
         messageBoxId: messageBox.messageBoxId, // Foreign key
         sender: req.authrite.identityKey,
         recipient: req.body.message.recipient,
