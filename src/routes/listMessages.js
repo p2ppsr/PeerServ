@@ -18,7 +18,7 @@ module.exports = {
   exampleResponse: {
     status: 'success',
     messages: [{
-      messageId: 3301,
+      messageId: '3301',
       body: '{}',
       sender: '028d37b941208cd6b8a4c28288eda5f2f16c2b3ab0fcb6d13c18b47fe37b971fc1'
     }]

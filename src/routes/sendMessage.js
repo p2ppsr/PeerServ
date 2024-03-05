@@ -52,6 +52,13 @@ module.exports = {
           description: 'Recipient must be a compressed public key formatted as a hex string!'
         })
       }
+      if (typeof req.body.messageId !== 'string') {
+        return res.status(400).json({
+          status: 'error',
+          code: 'ERR_INVALID_MESSAGEID',
+          description: 'Please provide a unique counterparty specific messageID!'
+        })
+      }
       if (!req.body.message.messageBox) {
         return res.status(400).json({
           status: 'error',
@@ -108,6 +115,7 @@ module.exports = {
       // Insert the new message
       // Note: Additional encryption could be enforced here
       await knex('messages').insert({
+        messageId: req.body.messageId,
         messageBoxId: messageBox.messageBoxId, // Foreign key
         sender: req.authrite.identityKey,
         recipient: req.body.message.recipient,
