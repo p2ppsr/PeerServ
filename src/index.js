@@ -60,10 +60,18 @@ app.use((req, res, next) => {
 io.on('connection', function (socket) {
   console.log('A user connected')
 
+  // Support private rooms as well
+  socket.on('joinPrivateRoom', (roomId) => {
+    socket.join(roomId)
+    console.log('User joined private room');
+  })
+
   // Joining a room
   socket.on('joinRoom', (roomId) => {
-    socket.join(roomId)
-    console.log(`User joined room ${roomId}`);
+    if (socket.handshake.headers['x-authrite-identity-key'] === roomId.substring(0, roomId.indexOf('-'))) {
+      socket.join(roomId)
+      console.log(`User joined room ${roomId}`);
+    }
   })
 
   // Leaving a room
