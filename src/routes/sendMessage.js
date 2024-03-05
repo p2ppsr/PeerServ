@@ -52,7 +52,7 @@ module.exports = {
           description: 'Recipient must be a compressed public key formatted as a hex string!'
         })
       }
-      if (typeof req.body.messageId !== 'string') {
+      if (typeof req.body.message.messageId !== 'string') {
         return res.status(400).json({
           status: 'error',
           code: 'ERR_INVALID_MESSAGEID',
