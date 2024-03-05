@@ -74,7 +74,12 @@ io.on('connection', function (socket) {
 
   // Sending a message to a room
   socket.on('sendMessage', ({ roomId, message }) => {
-    io.to(roomId).emit('sendMessage', message)
+    if (socket.handshake.headers['x-authrite-identity-key']) {
+      io.to(roomId).emit('sendMessage', {
+        sender: socket.handshake.headers['x-authrite-identity-key'],
+        message
+      })
+    }
   })
 
   socket.on('disconnect', (reason) => {
