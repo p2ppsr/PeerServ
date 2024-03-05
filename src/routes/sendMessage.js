@@ -15,6 +15,7 @@ module.exports = {
     message: {
       recipient: '028d37b941208cd6b8a4c28288eda5f2f16c2b3ab0fcb6d13c18b47fe37b971fc1',
       messageBox: 'payment_inbox',
+      messageId: 'xyz123',
       body: '{}'
     }
   },
@@ -114,15 +115,26 @@ module.exports = {
 
       // Insert the new message
       // Note: Additional encryption could be enforced here
-      await knex('messages').insert({
-        messageId: req.body.message.messageId,
-        messageBoxId: messageBox.messageBoxId, // Foreign key
-        sender: req.authrite.identityKey,
-        recipient: req.body.message.recipient,
-        body: req.body.message.body, // Should a buffer be supported in the future?
-        created_at: new Date(),
-        updated_at: new Date()
-      })
+      try {
+        await knex('messages').insert({
+          messageId: req.body.message.messageId,
+          messageBoxId: messageBox.messageBoxId, // Foreign key
+          sender: req.authrite.identityKey,
+          recipient: req.body.message.recipient,
+          body: req.body.message.body, // Should a buffer be supported in the future?
+          created_at: new Date(),
+          updated_at: new Date()
+        })
+      } catch (error) {
+        if (error.code === 'ER_DUP_ENTRY') {
+          return res.status(400).json({
+            status: 'error',
+            code: 'ERR_DUPLICATE_MESSAGE',
+            description: 'Your message has already been sent to the intended recipient!'
+          })
+        }
+        throw error
+      }
 
       return res.status(200).json({
         status: 'success',
