@@ -1,3 +1,4 @@
+const crypto = require('crypto')
 const {
   NODE_ENV
 } = process.env
@@ -108,6 +109,7 @@ module.exports = {
       // Insert the new message
       // Note: Additional encryption could be enforced here
       await knex('messages').insert({
+        messageId: req.body.messageId || crypto.randomBytes(32).toString('hex'),
         messageBoxId: messageBox.messageBoxId, // Foreign key
         sender: req.authrite.identityKey,
         recipient: req.body.message.recipient,
