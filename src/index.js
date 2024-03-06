@@ -83,10 +83,14 @@ io.on('connection', function (socket) {
   // Sending a message to a room
   socket.on('sendMessage', ({ roomId, message }) => {
     if (socket.handshake.headers['x-authrite-identity-key']) {
-      io.to(roomId).emit(`sendMessage-${roomId}`, {
-        sender: socket.handshake.headers['x-authrite-identity-key'],
-        message
-      })
+      let dataToSend = { sender: socket.handshake.headers['x-authrite-identity-key'] }
+      // Merge message props with sender if type is object
+      if (typeof message === 'object' && Object.keys(message).length !== 0) {
+        Object.assign(dataToSend, message)
+      } else {
+        dataToSend.message = message
+      }
+      io.to(roomId).emit(`sendMessage-${roomId}`, dataToSend)
     }
   })
 
