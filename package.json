@@ -1,7 +1,7 @@
 {
   "name": "peerserv",
   "description": "Peer-to-peer message exchange",
-  "version": "0.2.19",
+  "version": "0.2.20",
   "private": true,
   "main": "src/index.js",
   "repository": "https://github.com/p2ppsr/peerserv",
