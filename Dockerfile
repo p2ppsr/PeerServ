@@ -1,18 +1,13 @@
-FROM node:16-alpine
+FROM node:22.23.4-alpine
 
-# Install nginx
-RUN echo "http://dl-4.alpinelinux.org/alpine/v3.3/main" >> /etc/apk/repositories && \
-    apk add --update nginx && \
-    rm -rf /var/cache/apk/* && \
-    chown -R nginx:www-data /var/lib/nginx
-
-COPY ./nginx.conf /etc/nginx/nginx.conf
+RUN apk add --no-cache nginx && mkdir -p /run/nginx /var/lib/nginx && chown -R nginx:nginx /var/lib/nginx
+COPY nginx.conf /etc/nginx/nginx.conf
+RUN nginx -t
 
 EXPOSE 8080
 WORKDIR /app
-COPY package.json .
-RUN npm i
-RUN npm i knex -g
+COPY package.json package-lock.json ./
+RUN npm ci
+ENV PATH="/app/node_modules/.bin:${PATH}"
 COPY . .
-RUN npm remove toidentifier
-CMD [ "sh", "scripts/start.sh"]
+CMD ["sh", "scripts/start.sh"]
